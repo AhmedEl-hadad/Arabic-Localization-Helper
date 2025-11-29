@@ -21,7 +21,7 @@ export function isSafeToTranslate(text: string): boolean {
   }
   
   // Skip strings that contain code patterns (common indicators)
-  if (text.includes('${') || text.includes('${') || text.includes('function(') || 
+  if (text.includes('${') || text.includes('function(') || 
       text.includes('=>') || text.includes('()') || text.includes('{}')) {
     return false;
   }

@@ -2,6 +2,7 @@ import * as path from 'path';
 import { translateJson } from './translateJson';
 import { translateHtml } from './translateHtml';
 import { translateStrings } from './translateStrings';
+import { translateCss } from './translateCss';
 import { readFileSafe, writeFileSafe, getOutputPath, isWithinProjectRoot } from './utils/fileManager';
 import { getProjectRoot } from './utils/detectRoot';
 
@@ -30,9 +31,9 @@ export function clearCache(): void {
 /**
  * Detects the file type based on extension and routes to appropriate translator
  * @param filePath - Absolute path to the file
- * @returns The file type: 'json', 'html', 'js', or 'unknown'
+ * @returns The file type: 'json', 'html', 'js', 'css', or 'unknown'
  */
-function detectFileType(filePath: string): 'json' | 'html' | 'js' | 'unknown' {
+function detectFileType(filePath: string): 'json' | 'html' | 'js' | 'css' | 'unknown' {
   const ext = path.extname(filePath).toLowerCase();
   
   if (ext === '.json') {
@@ -45,6 +46,10 @@ function detectFileType(filePath: string): 'json' | 'html' | 'js' | 'unknown' {
   
   if (ext === '.js' || ext === '.ts' || ext === '.jsx' || ext === '.tsx') {
     return 'js';
+  }
+  
+  if (ext === '.css' || ext === '.scss' || ext === '.less') {
+    return 'css';
   }
   
   return 'unknown';
@@ -78,6 +83,13 @@ export async function translateFile(
     
     // Read file content (includes boundary check)
     const content = await readFileSafe(filePath, actualProjectRoot);
+    
+    // Handle CSS files separately (they don't use text translation)
+    if (fileType === 'css') {
+      await translateCss(filePath, actualProjectRoot);
+      console.log(`✓ Translated: ${path.basename(filePath)} → ${path.basename(getOutputPath(filePath))}`);
+      return;
+    }
     
     // Translate based on file type
     let translatedContent: string;
@@ -120,6 +132,7 @@ export async function translateFile(
 
 /**
  * Translates multiple files
+ * Processes text translation files first, then CSS files
  * @param filePaths - Array of absolute paths to files
  * @param projectRoot - Optional project root for boundary checking
  * @returns Promise that resolves when all translations are complete
@@ -131,9 +144,34 @@ export async function translateFiles(
   let successCount = 0;
   let failCount = 0;
   
-  console.log(`\nTranslating ${filePaths.length} file(s)...\n`);
+  // Separate CSS files from text translation files
+  const textFiles: string[] = [];
+  const cssFiles: string[] = [];
   
   for (const filePath of filePaths) {
+    const fileType = detectFileType(filePath);
+    if (fileType === 'css') {
+      cssFiles.push(filePath);
+    } else {
+      textFiles.push(filePath);
+    }
+  }
+  
+  console.log(`\nTranslating ${filePaths.length} file(s)...\n`);
+  
+  // Process text translation files first
+  for (const filePath of textFiles) {
+    try {
+      await translateFile(filePath, projectRoot);
+      successCount++;
+    } catch (error) {
+      failCount++;
+      // Continue with next file even if one fails
+    }
+  }
+  
+  // Process CSS files after text translations
+  for (const filePath of cssFiles) {
     try {
       await translateFile(filePath, projectRoot);
       successCount++;

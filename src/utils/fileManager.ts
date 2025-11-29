@@ -5,7 +5,7 @@ import { getToolRoot, getProjectRoot } from './detectRoot';
 /**
  * Supported file extensions for translation
  */
-const SUPPORTED_EXTENSIONS = ['.json', '.js', '.ts', '.jsx', '.tsx', '.html', '.htm'];
+const SUPPORTED_EXTENSIONS = ['.json', '.js', '.ts', '.jsx', '.tsx', '.html', '.htm', '.css', '.scss', '.less'];
 
 /**
  * Checks if a file path is within the project root directory.

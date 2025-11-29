@@ -15,7 +15,7 @@ export async function scanFiles(customProjectRoot?: string): Promise<string[]> {
   const toolRoot = getToolRoot();
   
   // Whitelist of supported extensions
-  const extensions = ['json', 'js', 'ts', 'jsx', 'tsx', 'html', 'htm'];
+  const extensions = ['json', 'js', 'ts', 'jsx', 'tsx', 'html', 'htm', 'css', 'scss', 'less'];
   
   // Build glob patterns for all supported extensions
   const patterns = extensions.map(ext => `**/*.${ext}`);

@@ -21,6 +21,27 @@ export function translateHtml(
   const dict = dictionary as Record<string, string>;
   let result = content;
   
+  // Add or update dir="rtl" and lang="ar" to <html> tag
+  result = result.replace(/<html\s*([^>]*)>/i, (match, attributes) => {
+    let updatedAttributes = attributes || '';
+    
+    // Update or add dir attribute
+    if (/dir\s*=\s*["'][^"']*["']/i.test(updatedAttributes)) {
+      updatedAttributes = updatedAttributes.replace(/dir\s*=\s*["'][^"']*["']/i, 'dir="rtl"');
+    } else {
+      updatedAttributes = updatedAttributes.trim() + (updatedAttributes.trim() ? ' ' : '') + 'dir="rtl"';
+    }
+    
+    // Update or add lang attribute
+    if (/lang\s*=\s*["'][^"']*["']/i.test(updatedAttributes)) {
+      updatedAttributes = updatedAttributes.replace(/lang\s*=\s*["'][^"']*["']/i, 'lang="ar"');
+    } else {
+      updatedAttributes = updatedAttributes.trim() + (updatedAttributes.trim() ? ' ' : '') + 'lang="ar"';
+    }
+    
+    return `<html ${updatedAttributes.trim()}>`;
+  });
+  
   /**
    * Translates a single text string using dictionary and cache
    */

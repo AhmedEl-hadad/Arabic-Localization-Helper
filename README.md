@@ -21,9 +21,13 @@ A command-line tool that automatically translates English text to Arabic in your
 - Doesn't use AI or machine learning (uses a dictionary-based approach)
 - Doesn't create backup files
 
+> ⚠️ **Important**: When downloading the tool from GitHub, you get the source files. To use the tool properly, you must run `npm install` in the project directory to install all dependencies before running commands.
+
 ## Features
 
-- ✅ **Multiple File Type Support**: JSON, JavaScript, TypeScript, JSX, TSX, and HTML files
+- ✅ **Multiple File Type Support**: JSON, JavaScript, TypeScript, JSX, TSX, HTML, CSS, SCSS, and LESS files
+- ✅ **RTL CSS Support**: Automatically converts CSS/SCSS/LESS files to RTL versions
+- ✅ **HTML RTL Attributes**: Automatically adds `dir="rtl"` and `lang="ar"` to HTML files
 - ✅ **Safe AST Parsing**: Uses Abstract Syntax Tree parsing for JavaScript/TypeScript to only translate safe strings
 - ✅ **Automatic Scanning**: Recursively scans your project directory
 - ✅ **Smart Exclusions**: Automatically skips `node_modules`, `.git`, build folders, and already-translated files
@@ -34,31 +38,30 @@ A command-line tool that automatically translates English text to Arabic in your
 
 ## Installation
 
-### Global Installation (Recommended)
+### From GitHub Source
+
+1. **Clone or download the repository**:
 
 ```bash
-npm install -g arabic-localization-helper
+git clone https://github.com/AhmedEl-hadad/Arabic-Localization-Helper.git
+cd Arabic-Localization-Helper
 ```
 
-After installation, you can use it from anywhere:
+2. **Install dependencies**:
 
 ```bash
-arabic-localization-helper scan --project "/path/to/your/project"
+npm install
 ```
 
-### Local Installation
+3. **Build the project** (optional, for development):
 
 ```bash
-npm install arabic-localization-helper
+npm run build
 ```
 
-Then use with `npx`:
+### Using npx (If Published to npm)
 
-```bash
-npx arabic-localization-helper scan --project "/path/to/your/project"
-```
-
-### Using npx (No Installation)
+If the package is published to npm, you can use it directly:
 
 ```bash
 npx arabic-localization-helper scan --project "/path/to/your/project"
@@ -66,23 +69,37 @@ npx arabic-localization-helper scan --project "/path/to/your/project"
 
 ## Quick Start
 
-1. **Navigate to your project directory** (or use `--project` flag):
+1. **Install dependencies** (if using from GitHub source):
 
 ```bash
-cd /path/to/your/project
+npm install
 ```
 
 2. **Preview what will be translated**:
 
 ```bash
-arabic-localization-helper scan
+npm start scan
+```
+
+Or specify a project path:
+
+```bash
+npm start scan --project "/path/to/your/project"
 ```
 
 3. **Translate the files**:
 
 ```bash
-arabic-localization-helper translate
+npm start translate
 ```
+
+Or specify a project path:
+
+```bash
+npm start translate --project "/path/to/your/project"
+```
+
+**Note:** By default, if no `--project` flag is specified, the tool scans the parent directory of the tool installation.
 
 That's it! The tool will create Arabic versions of your files with the `-ar` suffix.
 
@@ -95,9 +112,11 @@ That's it! The tool will create Arabic versions of your files with the `-ar` suf
 Scans your project and lists all files that will be translated **without actually translating them**.
 
 ```bash
-arabic-localization-helper scan
+npm start scan
 # or
-arabic-localization-helper scan --project "/path/to/project"
+npm start scan --project "/path/to/project"
+# or (if published to npm)
+npx arabic-localization-helper scan --project "/path/to/project"
 ```
 
 **Output example:**
@@ -120,9 +139,11 @@ Total: 15 file(s)
 Actually translates all scanned files and creates Arabic versions.
 
 ```bash
-arabic-localization-helper translate
+npm start translate
 # or
-arabic-localization-helper translate --project "/path/to/project"
+npm start translate --project "/path/to/project"
+# or (if published to npm)
+npx arabic-localization-helper translate --project "/path/to/project"
 ```
 
 **Output example:**
@@ -148,7 +169,9 @@ Cache size: 342 entries
 Creates sample files in a temporary directory and demonstrates the translation process.
 
 ```bash
-arabic-localization-helper test
+npm start test
+# or (if published to npm)
+npx arabic-localization-helper test
 ```
 
 This is useful for:
@@ -161,7 +184,9 @@ This is useful for:
 If you don't specify a command, it runs both `scan` and `translate`:
 
 ```bash
-arabic-localization-helper
+npm start
+# or (if published to npm)
+npx arabic-localization-helper
 ```
 
 ### Options
@@ -177,21 +202,25 @@ Specify a custom project directory to scan. Use this when:
 
 ```bash
 # Windows
-arabic-localization-helper scan --project "C:\Users\YourName\Projects\MyApp"
+npm start scan --project "C:\Users\YourName\Projects\MyApp"
 
 # macOS/Linux
-arabic-localization-helper scan --project "/home/username/projects/myapp"
+npm start scan --project "/home/username/projects/myapp"
 
 # Relative path
-arabic-localization-helper scan --project "./my-project"
+npm start scan --project "./my-project"
 ```
+
+**Note:** If no `--project` or `--target` flag is specified, the tool automatically scans the parent directory of the tool installation.
 
 #### `--help` or `-h`
 
 Display help information:
 
 ```bash
-arabic-localization-helper --help
+npm start --help
+# or (if published to npm)
+npx arabic-localization-helper --help
 ```
 
 ## Use Cases
@@ -201,8 +230,7 @@ arabic-localization-helper --help
 Translate your React, Vue, or Angular application to Arabic:
 
 ```bash
-cd my-react-app
-arabic-localization-helper translate
+npm start translate --project "./my-react-app"
 ```
 
 **Result:** Creates Arabic versions of all component files and configuration files.
@@ -212,7 +240,7 @@ arabic-localization-helper translate
 Translate HTML files for a static website:
 
 ```bash
-arabic-localization-helper translate --project "./website"
+npm start translate --project "./website"
 ```
 
 **Result:** Creates `index-ar.html`, `about-ar.html`, etc.
@@ -222,7 +250,7 @@ arabic-localization-helper translate --project "./website"
 Translate language files, configuration, or data files:
 
 ```bash
-arabic-localization-helper translate --project "./config"
+npm start translate --project "./config"
 ```
 
 **Result:** Creates Arabic versions of all JSON files.
@@ -279,6 +307,7 @@ Translates:
 - `title` attributes
 - `placeholder` attributes on inputs
 - `aria-label` attributes for accessibility
+- Automatically adds/updates `dir="rtl"` and `lang="ar"` to `<html>` tag
 
 **Does NOT translate:**
 - `class`, `id`, `href`, `src` attributes
@@ -305,7 +334,7 @@ Translates:
 
 **After (`index-ar.html`):**
 ```html
-<html>
+<html dir="rtl" lang="ar">
 <head>
     <title>صفحة الترحيب</title>
 </head>
@@ -317,6 +346,8 @@ Translates:
 </body>
 </html>
 ```
+
+**Note:** The tool automatically adds or updates `dir="rtl"` and `lang="ar"` attributes to the `<html>` tag in translated HTML files.
 
 ### JavaScript/TypeScript Files (`.js`, `.ts`, `.jsx`, `.tsx`)
 
@@ -366,9 +397,56 @@ function App() {
 }
 ```
 
+### CSS/SCSS/LESS Files (`.css`, `.scss`, `.less`)
+
+Converts CSS files to RTL (Right-to-Left) versions using the `rtlcss` library. This handles directional properties like `margin`, `padding`, `left`, `right`, `float`, `text-align`, and more.
+
+**What it does:**
+- Converts LTR CSS to RTL CSS automatically
+- Handles directional properties (`left` ↔ `right`, `margin-left` ↔ `margin-right`, etc.)
+- Flips `float` values (`left` ↔ `right`)
+- Adjusts `text-align` values
+- Processes nested rules in SCSS/LESS files
+
+**Example:**
+
+**Before (`styles.css`):**
+```css
+.container {
+  margin-left: 20px;
+  padding-right: 10px;
+  float: left;
+  text-align: left;
+}
+
+.sidebar {
+  position: absolute;
+  left: 0;
+  width: 250px;
+}
+```
+
+**After (`styles-ar.css`):**
+```css
+.container {
+  margin-right: 20px;
+  padding-left: 10px;
+  float: right;
+  text-align: right;
+}
+
+.sidebar {
+  position: absolute;
+  right: 0;
+  width: 250px;
+}
+```
+
+**Note:** CSS files are processed for RTL conversion, not text translation. The tool creates `-ar.css`, `-ar.scss`, or `-ar.less` files with RTL-adjusted styles.
+
 ## How It Works
 
-1. **Scanning**: The tool scans your project directory for supported file types (JSON, JS/TS/JSX/TSX, HTML)
+1. **Scanning**: The tool scans your project directory for supported file types (JSON, JS/TS/JSX/TSX, HTML, CSS/SCSS/LESS)
 
 2. **Exclusion**: Automatically excludes:
    - `node_modules/` directory
@@ -379,8 +457,9 @@ function App() {
 
 3. **Parsing**: Each file is parsed based on its type:
    - **JSON**: Recursively processes all string values
-   - **HTML**: Uses regex to find text content and specific attributes
+   - **HTML**: Uses regex to find text content and specific attributes, adds/updates `dir="rtl"` and `lang="ar"` to `<html>` tag
    - **JavaScript/TypeScript**: Uses AST parsing to find safe string literals
+   - **CSS/SCSS/LESS**: Processes through rtlcss library for RTL conversion
 
 4. **Translation**: Matches English text against a built-in dictionary of 10,000+ common words and phrases
 
@@ -398,6 +477,9 @@ The tool creates new files with the `-ar` suffix:
 - `App.jsx` → `App-ar.jsx`
 - `index.html` → `index-ar.html`
 - `config.ts` → `config-ar.ts`
+- `styles.css` → `styles-ar.css`
+- `theme.scss` → `theme-ar.scss`
+- `variables.less` → `variables-ar.less`
 
 ### File Structure
 
@@ -486,9 +568,9 @@ The tool checks if strings are safe to translate by:
 
 ### 4. Formatting
 
-- **Does NOT handle RTL (Right-to-Left) formatting** - Arabic text is inserted but HTML/CSS RTL direction must be handled separately
-- Doesn't adjust layout or styling for Arabic text
-- Doesn't handle Arabic-specific typography
+- **RTL CSS conversion is handled automatically** - CSS/SCSS/LESS files are converted to RTL versions
+- **HTML `dir="rtl"` and `lang="ar"` attributes are added automatically** to translated HTML files
+- Doesn't handle Arabic-specific typography beyond RTL conversion
 
 ### 5. HTML Attributes
 
@@ -546,26 +628,24 @@ The tool automatically excludes the following from scanning:
 ### Example 1: Translating a React App
 
 ```bash
-# Navigate to your React app
-cd my-react-app
-
 # Preview what will be translated
-arabic-localization-helper scan
+npm start scan --project "./my-react-app"
 
 # Translate all files
-arabic-localization-helper translate
+npm start translate --project "./my-react-app"
 ```
 
 **Result:**
 - All `.jsx` files get Arabic versions: `App.jsx` → `App-ar.jsx`
 - All `.json` config files get Arabic versions
+- All `.css` files get RTL versions: `styles.css` → `styles-ar.css`
 - Original files remain unchanged
 
 ### Example 2: Translating Specific Directory
 
 ```bash
 # Translate only the public folder
-arabic-localization-helper translate --project "./public"
+npm start translate --project "./public"
 ```
 
 **Result:**
@@ -576,7 +656,7 @@ arabic-localization-helper translate --project "./public"
 
 ```bash
 # Translate language files
-arabic-localization-helper translate --project "./src/locales"
+npm start translate --project "./src/locales"
 ```
 
 **Result:**
@@ -593,7 +673,7 @@ arabic-localization-helper translate --project "./src/locales"
 3. Wrong project path specified
 
 **Solutions:**
-- Check that your project has `.json`, `.js`, `.jsx`, `.ts`, `.tsx`, or `.html` files
+- Check that your project has `.json`, `.js`, `.jsx`, `.ts`, `.tsx`, `.html`, `.css`, `.scss`, or `.less` files
 - Verify you're in the correct directory or using the correct `--project` path
 - Make sure files aren't in excluded directories
 
@@ -605,7 +685,7 @@ arabic-localization-helper translate --project "./src/locales"
 3. File is already translated (`*-ar.*`)
 
 **Solutions:**
-- Check file extension is supported (`.json`, `.js`, `.jsx`, `.ts`, `.tsx`, `.html`, `.htm`)
+- Check file extension is supported (`.json`, `.js`, `.jsx`, `.ts`, `.tsx`, `.html`, `.htm`, `.css`, `.scss`, `.less`)
 - Move file out of `node_modules`, `dist`, or other excluded directories
 - Remove `-ar` suffix if you want to re-translate
 
@@ -627,22 +707,23 @@ arabic-localization-helper translate --project "./src/locales"
 
 **Solution:** Use quotes around paths:
 ```bash
-arabic-localization-helper scan --project "C:\Users\YourName\Projects\MyApp"
+npm start scan --project "C:\Users\YourName\Projects\MyApp"
 ```
 
 Or use forward slashes (works on Windows too):
 ```bash
-arabic-localization-helper scan --project "C:/Users/YourName/Projects/MyApp"
+npm start scan --project "C:/Users/YourName/Projects/MyApp"
 ```
 
-### "Command not found" after installation
+### "Command not found" or "npm start" not working
 
-**Problem:** Global installation path not in PATH
+**Problem:** Dependencies not installed or wrong directory
 
 **Solutions:**
-- Use `npx` instead: `npx arabic-localization-helper scan`
-- Reinstall globally: `npm install -g arabic-localization-helper`
-- Check npm global path: `npm config get prefix`
+- Make sure you've run `npm install` in the project directory
+- Verify you're in the correct directory (where `package.json` is located)
+- If using from GitHub source, ensure you've installed dependencies: `npm install`
+- If published to npm, use `npx arabic-localization-helper` instead
 
 ## Best Practices
 
@@ -651,7 +732,7 @@ arabic-localization-helper scan --project "C:/Users/YourName/Projects/MyApp"
 Use the `scan` command before translating to see what will be affected:
 
 ```bash
-arabic-localization-helper scan
+npm start scan
 ```
 
 ### 2. Use Version Control
@@ -681,10 +762,10 @@ When possible, translate specific directories rather than entire projects:
 
 ```bash
 # Better: Translate only what you need
-arabic-localization-helper translate --project "./src/components"
+npm start translate --project "./src/components"
 
-# Instead of: Translating everything
-arabic-localization-helper translate
+# Instead of: Translating everything (scans parent directory by default)
+npm start translate
 ```
 
 ### 6. Keep Originals
