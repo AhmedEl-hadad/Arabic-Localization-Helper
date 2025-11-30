@@ -7,69 +7,31 @@ A command-line tool that automatically translates English text to Arabic in your
 
 ## What is This Tool?
 
-**Arabic Localization Helper** is a powerful automation tool that helps you create Arabic translations of your web applications, React projects, and static websites. With optional AI-powered translation, it intelligently expands its dictionary while maintaining a dictionary-first approach for accuracy and performance. 
+**Arabic Localization Helper** is a powerful automation tool that helps you create Arabic translations of your web applications, React projects, and static websites. With optional AI-powered translation, it intelligently expands its dictionary while maintaining a dictionary-first approach.
 
-**What it does:**
-- Scans your project files for English text
-- Translates found text to Arabic using a built-in dictionary
+**Key Features:**
+- Scans and translates JSON, JavaScript, TypeScript, JSX, TSX, HTML, CSS, SCSS, and LESS files
 - Creates new files with `-ar` suffix (e.g., `home.json` → `home-ar.json`)
 - **Never modifies your original files**
+- Optional Gemini AI integration for missing words
+- Automatic RTL CSS conversion and HTML RTL attributes
+- Safe AST parsing for JavaScript/TypeScript
+- Smart exclusions (node_modules, .git, build folders)
+- Cross-platform support (Windows, macOS, Linux)
 
-**What it doesn't do:**
-- Doesn't change your original code files
-- Doesn't translate code logic or functionality
-- Doesn't create backup files
-
-**AI Translation (Optional):**
-- Uses optional Gemini AI for words not in the dictionary
-- Dictionary-first approach - AI only for missing words
-- Fully works offline if AI is disabled or unavailable
-
-> ⚠️ **Important**: When downloading the tool from GitHub, you get the source files. To use the tool properly, you must run `npm install` in the project directory to install all dependencies before running commands.
-
-## Features
-
-- ✅ **Multiple File Type Support**: JSON, JavaScript, TypeScript, JSX, TSX, HTML, CSS, SCSS, and LESS files
-- ✅ **RTL CSS Support**: Automatically converts CSS/SCSS/LESS files to RTL versions
-- ✅ **HTML RTL Attributes**: Automatically adds `dir="rtl"` and `lang="ar"` to HTML files
-- ✅ **Safe AST Parsing**: Uses Abstract Syntax Tree parsing for JavaScript/TypeScript to only translate safe strings
-- ✅ **Automatic Scanning**: Recursively scans your project directory
-- ✅ **Smart Exclusions**: Automatically skips `node_modules`, `.git`, build folders, and already-translated files
-- ✅ **Boundary Protection**: Never scans outside your specified project directory
-- ✅ **Translation Caching**: Improves performance by caching translations
-- ✅ **Clean Output**: Only creates translated files, no backup clutter
-- ✅ **Cross-Platform**: Works on Windows, macOS, and Linux
-- ✅ **Hybrid AI Translation**: Optional Gemini AI integration for missing words with automatic dictionary expansion
-- ✅ **Pre-Scanning**: Intelligently pre-scans files to collect missing words before translation
-- ✅ **Smart Model Detection**: Automatically detects and uses the best available Gemini API model
-- ✅ **Dual Dictionary Expansion**: AI translations are saved to both `cached_words.json` and `dictionary.json` for permanent storage
+> ⚠️ **Important**: Run `npm install` in the project directory before using the tool.
 
 ## Installation
 
 ### From GitHub Source
 
-1. **Clone or download the repository**:
-
 ```bash
 git clone https://github.com/AhmedEl-hadad/Arabic-Localization-Helper.git
 cd Arabic-Localization-Helper
-```
-
-2. **Install dependencies**:
-
-```bash
 npm install
 ```
 
-3. **Build the project** (optional, for development):
-
-```bash
-npm run build
-```
-
 ### Using npx (If Published to npm)
-
-If the package is published to npm, you can use it directly:
 
 ```bash
 npx arabic-localization-helper scan --project "/path/to/your/project"
@@ -77,837 +39,135 @@ npx arabic-localization-helper scan --project "/path/to/your/project"
 
 ## Quick Start
 
-1. **Install dependencies** (if using from GitHub source):
+1. **Preview what will be translated:**
+   ```bash
+   npm start scan --project "/path/to/your/project"
+   ```
 
-```bash
-npm install
-```
+2. **Translate the files:**
+   ```bash
+   npm start translate --project "/path/to/your/project"
+   ```
 
-2. **Preview what will be translated**:
+**Note:** If no `--project` flag is specified, the tool scans the parent directory of the tool installation.
 
-```bash
-npm start scan
-```
+## Commands
 
-Or specify a project path:
-
-```bash
-npm start scan --project "/path/to/your/project"
-```
-
-3. **Translate the files**:
-
-```bash
-npm start translate
-```
-
-Or specify a project path:
-
-```bash
-npm start translate --project "/path/to/your/project"
-```
-
-**Note:** By default, if no `--project` flag is specified, the tool scans the parent directory of the tool installation.
-
-That's it! The tool will create Arabic versions of your files with the `-ar` suffix.
-
-## Usage
-
-### Commands
-
-#### `scan` - Preview Files
-
-Scans your project and lists all files that will be translated **without actually translating them**.
-
-```bash
-npm start scan
-# or
-npm start scan --project "/path/to/project"
-# or (if published to npm)
-npx arabic-localization-helper scan --project "/path/to/project"
-```
-
-**Output example:**
-```
-Scanning project for translatable files...
-
-Found 15 file(s) to translate:
-
-  1. src/components/Header.jsx
-  2. src/pages/Home.jsx
-  3. public/index.html
-  4. src/data/config.json
-  ... and 11 more file(s)
-
-Total: 15 file(s)
-```
-
-#### `translate` - Translate Files
-
-Actually translates all scanned files and creates Arabic versions.
-
-```bash
-npm start translate
-# or
-npm start translate --project "/path/to/project"
-# or (if published to npm)
-npx arabic-localization-helper translate --project "/path/to/project"
-```
-
-**Output example:**
-```
-Starting translation process...
-
-Translating 15 file(s)...
-
-✓ Translated: Header.jsx → Header-ar.jsx
-✓ Translated: Home.jsx → Home-ar.jsx
-✓ Translated: index.html → index-ar.html
-✓ Translated: config.json → config-ar.json
-...
-
-Translation complete: 15 succeeded, 0 failed
-Cache size: 342 entries
-
-✓ All translations completed!
-```
-
-#### `test` - Test Mode
-
-Creates sample files in a temporary directory and demonstrates the translation process.
-
-```bash
-npm start test
-# or (if published to npm)
-npx arabic-localization-helper test
-```
-
-This is useful for:
-- Testing the tool without affecting your project
-- Understanding how translations work
-- Seeing example output
-
-#### Default (No Command)
-
-If you don't specify a command, it runs both `scan` and `translate`:
-
-```bash
-npm start
-# or (if published to npm)
-npx arabic-localization-helper
-```
-
-### Options
-
-#### `--project <path>` or `--target <path>`
-
-Specify a custom project directory to scan. Use this when:
-- You want to translate a specific project
-- You're running the tool from outside the project directory
-- You want to translate multiple projects
-
-**Examples:**
-
-```bash
-# Windows
-npm start scan --project "C:\Users\YourName\Projects\MyApp"
-
-# macOS/Linux
-npm start scan --project "/home/username/projects/myapp"
-
-# Relative path
-npm start scan --project "./my-project"
-```
-
-**Note:** If no `--project` or `--target` flag is specified, the tool automatically scans the parent directory of the tool installation.
-
-#### `--help` or `-h`
-
-Display help information:
-
-```bash
-npm start --help
-# or (if published to npm)
-npx arabic-localization-helper --help
-```
-
-## Use Cases
-
-### 1. Web Applications
-
-Translate your React, Vue, or Angular application to Arabic:
-
-```bash
-npm start translate --project "./my-react-app"
-```
-
-**Result:** Creates Arabic versions of all component files and configuration files.
-
-### 2. Static Websites
-
-Translate HTML files for a static website:
-
-```bash
-npm start translate --project "./website"
-```
-
-**Result:** Creates `index-ar.html`, `about-ar.html`, etc.
-
-### 3. JSON Configuration Files
-
-Translate language files, configuration, or data files:
-
-```bash
-npm start translate --project "./config"
-```
-
-**Result:** Creates Arabic versions of all JSON files.
-
-### 4. Multi-Language Support Preparation
-
-Prepare your project for multi-language support by generating Arabic translations alongside your English content.
-
-### 5. Content Management Systems
-
-Translate content files for CMS-based websites.
+- `scan` - Preview files that will be translated (no actual translation)
+- `translate` - Translate all scanned files and create Arabic versions
+- `test` - Run test mode with sample files
+- (no command) - Default: runs both scan and translate
 
 ## Supported File Types
 
-### JSON Files (`.json`)
-
+### JSON Files
 Translates all string values recursively throughout the JSON structure.
 
-**Example:**
+### HTML Files
+Translates text content, `alt`, `title`, `placeholder`, and `aria-label` attributes. Automatically adds `dir="rtl"` and `lang="ar"` to `<html>` tag.
 
-**Before (`config.json`):**
-```json
-{
-  "app": {
-    "title": "Welcome",
-    "description": "This is a sample application",
-    "buttons": {
-      "submit": "Submit",
-      "cancel": "Cancel"
-    }
-  }
-}
-```
+### JavaScript/TypeScript Files
+Uses AST parsing to safely translate only static string literals. Does NOT translate template literals with variables or code identifiers.
 
-**After (`config-ar.json`):**
-```json
-{
-  "app": {
-    "title": "مرحباً",
-    "description": "هذا تطبيق تجريبي",
-    "buttons": {
-      "submit": "إرسال",
-      "cancel": "إلغاء"
-    }
-  }
-}
-```
+### CSS/SCSS/LESS Files
+Converts CSS files to RTL (Right-to-Left) versions using the `rtlcss` library. Handles directional properties like `margin`, `padding`, `left`, `right`, `float`, `text-align`, etc.
 
-### HTML Files (`.html`, `.htm`)
+## Hybrid AI Translation (Optional)
 
-Translates:
-- Text content between HTML tags
-- `alt` attributes on images
-- `title` attributes
-- `placeholder` attributes on inputs
-- `aria-label` attributes for accessibility
-- Automatically adds/updates `dir="rtl"` and `lang="ar"` to `<html>` tag
-
-**Does NOT translate:**
-- `class`, `id`, `href`, `src` attributes
-- `style` attributes
-- `data-*` attributes
-- JavaScript event handlers
-
-**Example:**
-
-**Before (`index.html`):**
-```html
-<html>
-<head>
-    <title>Welcome Page</title>
-</head>
-<body>
-    <h1>Welcome to our website</h1>
-    <img src="logo.png" alt="Company Logo" title="Our Logo">
-    <input type="text" placeholder="Enter your name" aria-label="Name input">
-    <button>Submit</button>
-</body>
-</html>
-```
-
-**After (`index-ar.html`):**
-```html
-<html dir="rtl" lang="ar">
-<head>
-    <title>صفحة الترحيب</title>
-</head>
-<body>
-    <h1>مرحباً بكم في موقعنا</h1>
-    <img src="logo.png" alt="شعار الشركة" title="شعارنا">
-    <input type="text" placeholder="أدخل اسمك" aria-label="إدخال الاسم">
-    <button>إرسال</button>
-</body>
-</html>
-```
-
-**Note:** The tool automatically adds or updates `dir="rtl"` and `lang="ar"` attributes to the `<html>` tag in translated HTML files.
-
-### JavaScript/TypeScript Files (`.js`, `.ts`, `.jsx`, `.tsx`)
-
-Uses **AST (Abstract Syntax Tree) parsing** to safely translate only static string literals.
-
-**Translates:**
-- Static string literals: `"Hello World"`, `'Welcome'`
-- JSX text content in React components
-
-**Does NOT translate:**
-- Template literals with variables: `` `Hello ${name}` ``
-- Code identifiers: `functionName`, `variableName`
-- URLs, file paths
-- Code patterns that look like code
-
-**Example:**
-
-**Before (`App.jsx`):**
-```jsx
-function App() {
-  const title = "Welcome";
-  const message = "Hello World";
-  
-  return (
-    <div>
-      <h1>{title}</h1>
-      <p>{message}</p>
-      <button onClick={handleClick}>Submit</button>
-    </div>
-  );
-}
-```
-
-**After (`App-ar.jsx`):**
-```jsx
-function App() {
-  const title = "مرحباً";
-  const message = "مرحباً بالعالم";
-  
-  return (
-    <div>
-      <h1>{title}</h1>
-      <p>{message}</p>
-      <button onClick={handleClick}>إرسال</button>
-    </div>
-  );
-}
-```
-
-### CSS/SCSS/LESS Files (`.css`, `.scss`, `.less`)
-
-Converts CSS files to RTL (Right-to-Left) versions using the `rtlcss` library. This handles directional properties like `margin`, `padding`, `left`, `right`, `float`, `text-align`, and more.
-
-**What it does:**
-- Converts LTR CSS to RTL CSS automatically
-- Handles directional properties (`left` ↔ `right`, `margin-left` ↔ `margin-right`, etc.)
-- Flips `float` values (`left` ↔ `right`)
-- Adjusts `text-align` values
-- Processes nested rules in SCSS/LESS files
-
-**Example:**
-
-**Before (`styles.css`):**
-```css
-.container {
-  margin-left: 20px;
-  padding-right: 10px;
-  float: left;
-  text-align: left;
-}
-
-.sidebar {
-  position: absolute;
-  left: 0;
-  width: 250px;
-}
-```
-
-**After (`styles-ar.css`):**
-```css
-.container {
-  margin-right: 20px;
-  padding-left: 10px;
-  float: right;
-  text-align: right;
-}
-
-.sidebar {
-  position: absolute;
-  right: 0;
-  width: 250px;
-}
-```
-
-**Note:** CSS files are processed for RTL conversion, not text translation. The tool creates `-ar.css`, `-ar.scss`, or `-ar.less` files with RTL-adjusted styles.
-
-## How It Works
-
-1. **Scanning**: The tool scans your project directory for supported file types (JSON, JS/TS/JSX/TSX, HTML, CSS/SCSS/LESS)
-
-2. **Exclusion**: Automatically excludes:
-   - `node_modules/` directory
-   - `.git/` directory
-   - Build folders (`dist/`, `build/`, `.next/`, `out/`)
-   - Already translated files (`*-ar.*`)
-   - The tool's own directory
-
-3. **Parsing**: Each file is parsed based on its type:
-   - **JSON**: Recursively processes all string values
-   - **HTML**: Uses regex to find text content and specific attributes, adds/updates `dir="rtl"` and `lang="ar"` to `<html>` tag
-   - **JavaScript/TypeScript**: Uses AST parsing to find safe string literals
-   - **CSS/SCSS/LESS**: Processes through rtlcss library for RTL conversion
-
-4. **Translation**: Matches English text against a built-in dictionary of 10,000+ common words and phrases
-
-5. **Output**: Creates new files with `-ar` suffix containing the translations
-
-6. **Original Files**: Your original files remain completely unchanged
-
-## Output Files
-
-### Naming Convention
-
-The tool creates new files with the `-ar` suffix:
-
-- `home.json` → `home-ar.json`
-- `App.jsx` → `App-ar.jsx`
-- `index.html` → `index-ar.html`
-- `config.ts` → `config-ar.ts`
-- `styles.css` → `styles-ar.css`
-- `theme.scss` → `theme-ar.scss`
-- `variables.less` → `variables-ar.less`
-
-### File Structure
-
-The translated files are created in the **same directory** as the original files, preserving your project structure:
-
-```
-my-project/
-├── src/
-│   ├── components/
-│   │   ├── Header.jsx          (original)
-│   │   └── Header-ar.jsx       (translated)
-│   └── pages/
-│       ├── Home.jsx            (original)
-│       └── Home-ar.jsx         (translated)
-└── public/
-    ├── index.html              (original)
-    └── index-ar.html           (translated)
-```
-
-### What Gets Created
-
-- ✅ Only translated files with `-ar` suffix
-- ✅ No backup files (`.original` files are NOT created)
-- ✅ No modification to original files
-- ✅ Preserves directory structure
-
-## Safety Features
-
-The tool includes multiple safety mechanisms to protect your code:
-
-### 1. Never Modifies Originals
-
-Your original files are **never touched**. All translations are written to new files.
-
-### 2. Boundary Checking
-
-The tool **never scans outside** your specified project directory. It includes strict path validation to prevent accidental scanning of parent directories or system folders.
-
-### 3. Smart Exclusions
-
-Automatically excludes:
-- `node_modules/` - Dependencies
-- `.git/` - Version control
-- `dist/`, `build/`, `.next/`, `out/` - Build outputs
-- `*-ar.*` - Already translated files
-- Tool's own directory
-
-### 4. AST-Based Parsing for JavaScript
-
-For JavaScript/TypeScript files, the tool uses Abstract Syntax Tree (AST) parsing to:
-- Only translate static string literals
-- Skip template literals with variables
-- Avoid translating code identifiers
-- Preserve code structure and functionality
-
-### 5. Safe String Detection
-
-The tool checks if strings are safe to translate by:
-- Skipping URLs (`https://...`, `www.`)
-- Skipping code patterns (`${variable}`, `function()`, `=>`)
-- Skipping identifiers (camelCase, snake_case)
-- Skipping purely numeric or special character strings
-
-## Limitations
-
-### 1. Dictionary-Based Translation (With Optional AI Enhancement)
-
-- Primarily translates exact matches found in the dictionary
-- **Optional AI enhancement**: Can use Gemini AI for words not in dictionary (if enabled)
-- Built-in dictionary includes ~10,000+ common English words and phrases
-- Dictionary automatically expands with AI translations (if enabled)
-- Domain-specific terminology may require AI translation or manual addition
-
-### 2. No Context Awareness
-
-- Doesn't understand context or sentence structure
-- Doesn't handle pluralization variations
-- Doesn't handle gender-specific translations
-- Word-by-word translation for phrases not in dictionary
-
-### 3. Code Limitations
-
-- **Does NOT translate code comments**
-- **Does NOT translate template literals with variables**: `` `Hello ${name}` `` remains unchanged
-- **Does NOT translate dynamic content** or strings built programmatically
-- Only translates static string literals in JavaScript/TypeScript
-
-### 4. Formatting
-
-- **RTL CSS conversion is handled automatically** - CSS/SCSS/LESS files are converted to RTL versions
-- **HTML `dir="rtl"` and `lang="ar"` attributes are added automatically** to translated HTML files
-- Doesn't handle Arabic-specific typography beyond RTL conversion
-
-### 5. HTML Attributes
-
-- Only translates specific attributes: `alt`, `title`, `placeholder`, `aria-label`
-- Does NOT translate: `class`, `id`, `href`, `src`, `style`, `data-*` attributes
-- Does NOT translate JavaScript event handlers
-
-### 6. Complex Strings
-
-- May not translate complex sentences or paragraphs accurately
-- Idiomatic expressions may not translate correctly
-- Technical terms may need manual review
-
-### 7. Performance
-
-- Large projects (1000+ files) may take several minutes
-- First run is slower due to dictionary loading
-- Subsequent runs are faster due to caching
-
-## Dictionary
-
-The tool includes a built-in dictionary with **10,000+ English-Arabic translations** covering:
-
-- Common words and phrases
-- UI/UX terminology (buttons, labels, messages)
-- Web development terms
-- General vocabulary
-
-The dictionary is stored in `src/dictionary.json` and is automatically loaded when the tool runs.
-
-**Dictionary Expansion:**
-- The dictionary automatically expands through the Hybrid AI Translation feature
-- AI-translated words are permanently saved to `dictionary.json`
-- A secondary cache (`cached_words.json`) provides faster lookups
-- Both dictionaries are merged at runtime for optimal performance
-
-## Hybrid AI Translation
-
-The tool now includes an optional **Hybrid AI Translation** feature that uses Google's Gemini API to translate words not found in the dictionary, while maintaining the dictionary-first approach.
+The tool includes optional **Hybrid AI Translation** using Google's Gemini API for words not found in the dictionary.
 
 ### How It Works
 
-1. **Dictionary-First Priority**: The tool always checks the main dictionary (`dictionary.json`) first, then `cached_words.json`
-2. **Pre-Scanning Phase**: Before translation, the tool intelligently pre-scans all files to collect words and phrases not found in either dictionary
-3. **Smart Word Extraction**: Extracts translatable strings from JSON, HTML, and JavaScript/TypeScript files using the same parsing logic used for translation
-4. **AI Translation**: If AI is enabled and missing words are found, a single optimized API request is made to Gemini to translate all missing words at once
-5. **Smart Model Detection**: Automatically detects available Gemini models and tries multiple model versions for maximum compatibility
-6. **Dual Dictionary Expansion**: Successfully translated words are automatically saved to:
-   - `cached_words.json` (for immediate use in current session)
-   - `dictionary.json` (for permanent storage and future sessions)
-7. **Graceful Fallback**: If AI translation fails (network error, invalid key, quota exceeded, or model unavailable), the tool continues seamlessly with dictionary-only mode
+1. **Dictionary-First**: Always checks `dictionary.json` first, then `cached_words.json`
+2. **Pre-Scanning**: Pre-scans all files to collect missing words
+3. **AI Translation**: Single API request to Gemini for all missing words
+4. **Smart Model Detection**: Automatically tries multiple Gemini API models
+5. **Dual Dictionary Expansion**: Saves translations to both `cached_words.json` and `dictionary.json`
+6. **Graceful Fallback**: Continues with dictionary-only mode if AI fails
 
 ### Setup
 
-1. **Create `.env` file** in the project root:
+1. Create `.env` file in the project root:
    ```bash
    GEMINI_API_KEY="your-api-key-here"
    ```
 
-2. **Get a Gemini API Key**:
-   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Create a new API key
-   - Copy it to your `.env` file
+2. Get a Gemini API Key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 
-3. **Install dependencies** (if not already installed):
-   ```bash
-   npm install
-   ```
-
-The feature works automatically once the API key is configured. No code changes needed.
+3. The feature works automatically once configured. No code changes needed.
 
 ### Features
 
-- ✅ **Dictionary-First**: Always prioritizes built-in dictionary and cached words
-- ✅ **Pre-Scanning**: Intelligently collects missing words before translation begins
-- ✅ **One Request Per Run**: All missing words are sent in a single API request for maximum efficiency
-- ✅ **Smart Model Detection**: Automatically tries multiple Gemini API models (gemini-1.5-pro, gemini-1.5-flash, etc.) for best compatibility
-- ✅ **Dual Dictionary Expansion**: New translations are automatically saved to both:
-  - `cached_words.json` (immediate use)
-  - `dictionary.json` (permanent storage)
-- ✅ **Graceful Fallback**: Works fully offline with dictionary-only mode if AI is unavailable
-- ✅ **No Crashes**: All errors are handled gracefully - translation continues even if AI fails
-- ✅ **Temp File Management**: Temporary files are automatically created and cleaned up after processing
-- ✅ **Robust JSON Parsing**: Handles various AI response formats (objects, arrays, markdown-wrapped JSON)
-- ✅ **Error Recovery**: Network errors, API failures, and parsing errors are all handled without interrupting translation
+- ✅ Dictionary-first approach
+- ✅ One request per run (all missing words at once)
+- ✅ Automatic dictionary expansion
+- ✅ Works offline if AI is unavailable
+- ✅ Robust error handling
 
-### Configuration
+## Output Files
 
-The AI feature can be enabled/disabled via `src/config/ai.ts`:
-- `AI_ENABLED`: Set to `true` to enable AI translation (default: `true`)
-- `GEMINI_API_KEY`: Automatically loaded from `.env` file
+The tool creates new files with the `-ar` suffix in the same directory as originals:
+- `home.json` → `home-ar.json`
+- `App.jsx` → `App-ar.jsx`
+- `index.html` → `index-ar.html`
+- `styles.css` → `styles-ar.css`
 
-### Important Notes
+**Original files are never modified.**
 
-- The `.env` file is automatically excluded from version control (added to `.gitignore`)
-- The API key is never hardcoded - it must be provided via environment variables
-- The feature accepts any valid Gemini API key - users provide their own
-- Works locally and in production with no code changes - just update the `.env` file
+## Safety Features
 
-### Example Workflow
+- ✅ Never modifies original files
+- ✅ Boundary protection (never scans outside project directory)
+- ✅ Smart exclusions (node_modules, .git, build folders, already-translated files)
+- ✅ AST-based parsing for safe JavaScript/TypeScript translation
+- ✅ Safe string detection (skips URLs, code patterns, identifiers)
 
-```bash
-# 1. Set up your API key
-echo 'GEMINI_API_KEY="your-key-here"' > .env
+## Dictionary
 
-# 2. Run translation
-npm start translate --project "./my-project"
+Built-in dictionary with **10,000+ English-Arabic translations**. The dictionary automatically expands through AI translation (if enabled), saving new words to both `cached_words.json` and `dictionary.json`.
 
-# Output:
-# Pre-scanning files for missing words...
-# Found 15 missing word(s). Attempting AI translation...
-# ✓ AI translated 15 word(s). Added to dictionary.
-# Translating 42 file(s)...
-# ...
-```
+## Limitations
 
-The next time you run translation, those 15 words will be found in both `cached_words.json` and `dictionary.json` and won't require AI translation again. The dictionary grows automatically with each translation run!
-
-## Excluded Files and Directories
-
-The tool automatically excludes the following from scanning:
-
-### Directories
-- `node_modules/` - npm packages
-- `.git/` - Git repository
-- `dist/`, `build/`, `.next/`, `out/` - Build outputs
-- Tool's own installation directory
-
-### Files
-- Files already translated (`*-ar.*` pattern)
-- Files outside the specified project root
-- Unsupported file types
-
-### Patterns
-- Hidden files (starting with `.`)
-- Binary files
-- Files in excluded directories
-
-## Examples
-
-### Example 1: Translating a React App
-
-```bash
-# Preview what will be translated
-npm start scan --project "./my-react-app"
-
-# Translate all files
-npm start translate --project "./my-react-app"
-```
-
-**Result:**
-- All `.jsx` files get Arabic versions: `App.jsx` → `App-ar.jsx`
-- All `.json` config files get Arabic versions
-- All `.css` files get RTL versions: `styles.css` → `styles-ar.css`
-- Original files remain unchanged
-
-### Example 2: Translating Specific Directory
-
-```bash
-# Translate only the public folder
-npm start translate --project "./public"
-```
-
-**Result:**
-- Only files in the `public` directory are translated
-- Other directories are ignored
-
-### Example 3: Translating JSON Configuration
-
-```bash
-# Translate language files
-npm start translate --project "./src/locales"
-```
-
-**Result:**
-- All JSON files in the locales folder get Arabic versions
-- Perfect for i18n (internationalization) setups
+- Primarily translates exact dictionary matches (with optional AI enhancement)
+- No context awareness (word-by-word translation for phrases not in dictionary)
+- Does NOT translate code comments, template literals with variables, or dynamic content
+- Large projects (1000+ files) may take several minutes
 
 ## Troubleshooting
 
-### "No files found to translate"
+**"No files found to translate"**
+- Check for supported file types (`.json`, `.js`, `.jsx`, `.ts`, `.tsx`, `.html`, `.css`, `.scss`, `.less`)
+- Verify project path is correct
+- Ensure files aren't in excluded directories
 
-**Possible causes:**
-1. No supported file types in the directory
-2. All files are in excluded directories (`node_modules`, `dist`, etc.)
-3. Wrong project path specified
-
-**Solutions:**
-- Check that your project has `.json`, `.js`, `.jsx`, `.ts`, `.tsx`, `.html`, `.css`, `.scss`, or `.less` files
-- Verify you're in the correct directory or using the correct `--project` path
-- Make sure files aren't in excluded directories
-
-### Files not being translated
-
-**Possible causes:**
-1. File type not supported
-2. File is in an excluded directory
-3. File is already translated (`*-ar.*`)
-
-**Solutions:**
-- Check file extension is supported (`.json`, `.js`, `.jsx`, `.ts`, `.tsx`, `.html`, `.htm`, `.css`, `.scss`, `.less`)
+**Files not being translated**
+- Check file extension is supported
 - Move file out of `node_modules`, `dist`, or other excluded directories
 - Remove `-ar` suffix if you want to re-translate
 
-### Translation not appearing in output
-
-**Possible causes:**
-1. Text not in dictionary
-2. Text is being skipped as unsafe (code pattern, URL, etc.)
-3. Text is in a template literal with variables
-
-**Solutions:**
-- Check if the English text exists in the dictionary
-- Verify the text isn't a URL, code pattern, or identifier
-- For template literals, use static strings instead
-
-### Path issues on Windows
-
-**Problem:** Windows paths with backslashes may cause issues
-
-**Solution:** Use quotes around paths:
-```bash
-npm start scan --project "C:\Users\YourName\Projects\MyApp"
-```
-
-Or use forward slashes (works on Windows too):
-```bash
-npm start scan --project "C:/Users/YourName/Projects/MyApp"
-```
-
-### "Command not found" or "npm start" not working
-
-**Problem:** Dependencies not installed or wrong directory
-
-**Solutions:**
-- Make sure you've run `npm install` in the project directory
-- Verify you're in the correct directory (where `package.json` is located)
-- If using from GitHub source, ensure you've installed dependencies: `npm install`
-- If published to npm, use `npx arabic-localization-helper` instead
+**Translation not appearing**
+- Text may not be in dictionary (enable AI translation if needed)
+- Text may be skipped as unsafe (URL, code pattern, etc.)
+- Template literals with variables are not translated
 
 ## Best Practices
 
-### 1. Always Preview First
-
-Use the `scan` command before translating to see what will be affected:
-
-```bash
-npm start scan
-```
-
-### 2. Use Version Control
-
-Keep your original files in version control (Git) so you can:
-- Review changes
-- Revert if needed
-- Compare original and translated versions
-
-### 3. Review Translated Files
-
-After translation, review the Arabic files to:
-- Check translation accuracy
-- Verify formatting
-- Ensure RTL support is added (if needed)
-
-### 4. Test Your Application
-
-Test your application with the Arabic files to ensure:
-- No broken functionality
-- Proper RTL layout (add CSS direction: rtl)
-- Correct text display
-
-### 5. Use Specific Directories
-
-When possible, translate specific directories rather than entire projects:
-
-```bash
-# Better: Translate only what you need
-npm start translate --project "./src/components"
-
-# Instead of: Translating everything (scans parent directory by default)
-npm start translate
-```
-
-### 6. Keep Originals
-
-Never delete original files. The tool creates new files, so you can:
-- Keep both English and Arabic versions
-- Switch between languages
-- Update translations independently
+1. **Always preview first**: Use `scan` command before translating
+2. **Use version control**: Keep original files in Git
+3. **Review translated files**: Check translation accuracy
+4. **Test your application**: Ensure proper RTL layout and functionality
+5. **Use specific directories**: Translate only what you need
 
 ## Contributing
 
-Contributions are welcome! If you'd like to contribute:
-
-1. **Report Issues**: Found a bug? [Open an issue](https://github.com/AhmedEl-hadad/Arabic-Localization-Helper/issues)
-2. **Suggest Features**: Have an idea? [Create a feature request](https://github.com/AhmedEl-hadad/Arabic-Localization-Helper/issues)
-3. **Improve Dictionary**: Help expand the translation dictionary
-4. **Documentation**: Improve this README or add examples
-
-## License
-
-ISC License - See LICENSE file for details
-
-## Support
+Contributions are welcome! Report issues, suggest features, improve the dictionary, or enhance documentation.
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/AhmedEl-hadad/Arabic-Localization-Helper/issues)
 - **Repository**: [View source code](https://github.com/AhmedEl-hadad/Arabic-Localization-Helper)
 
-## Recent Updates
+## License
 
-### Latest Features (v1.0.0+)
-
-- 🚀 **Hybrid AI Translation**: Integrated Google Gemini API for intelligent translation of missing words
-- 🎯 **Pre-Scanning System**: Intelligently pre-scans files to collect missing words before translation
-- 🔄 **Smart Model Detection**: Automatically detects and uses the best available Gemini API model
-- 📚 **Dual Dictionary Expansion**: AI translations are saved to both `cached_words.json` and `dictionary.json`
-- 🛡️ **Enhanced Error Handling**: Robust error recovery for network issues, API failures, and parsing errors
-- 🧹 **Automatic Cleanup**: Temporary files are automatically created and cleaned up
-- ⚡ **Optimized Performance**: Single API request per translation run for maximum efficiency
-- 🔍 **Improved JSON Parsing**: Handles various AI response formats (objects, arrays, markdown-wrapped JSON)
-
-### Previous Updates
-
-- ✅ CSS/SCSS/LESS RTL conversion support
-- ✅ HTML RTL attributes (`dir="rtl"` and `lang="ar"`) automatic addition
-- ✅ AST-based parsing for JavaScript/TypeScript files
-- ✅ Translation caching for improved performance
-- ✅ Boundary protection and smart exclusions
+ISC License - See LICENSE file for details
 
 ## Author
 
@@ -916,4 +176,3 @@ Created by [Ahmed El-hadad](https://github.com/AhmedEl-hadad)
 ---
 
 **Note:** This tool is designed to assist with translation but may require manual review and editing for production use. Always test translated files in your application before deploying.
-
