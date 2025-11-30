@@ -18,4 +18,4 @@ translate-all.js
 empty-keys.json
 
 # Environment variables
-.env
+# .env is kept in repo for demo purposes - users can replace it with their own API key
