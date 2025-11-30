@@ -7,7 +7,7 @@ A command-line tool that automatically translates English text to Arabic in your
 
 ## What is This Tool?
 
-**Arabic Localization Helper** is a simple automation tool that helps you create Arabic translations of your web applications, React projects, and static websites. 
+**Arabic Localization Helper** is a powerful automation tool that helps you create Arabic translations of your web applications, React projects, and static websites. With optional AI-powered translation, it intelligently expands its dictionary while maintaining a dictionary-first approach for accuracy and performance. 
 
 **What it does:**
 - Scans your project files for English text
@@ -18,8 +18,12 @@ A command-line tool that automatically translates English text to Arabic in your
 **What it doesn't do:**
 - Doesn't change your original code files
 - Doesn't translate code logic or functionality
-- Doesn't use AI or machine learning (uses a dictionary-based approach)
 - Doesn't create backup files
+
+**AI Translation (Optional):**
+- Uses optional Gemini AI for words not in the dictionary
+- Dictionary-first approach - AI only for missing words
+- Fully works offline if AI is disabled or unavailable
 
 > ⚠️ **Important**: When downloading the tool from GitHub, you get the source files. To use the tool properly, you must run `npm install` in the project directory to install all dependencies before running commands.
 
@@ -35,6 +39,10 @@ A command-line tool that automatically translates English text to Arabic in your
 - ✅ **Translation Caching**: Improves performance by caching translations
 - ✅ **Clean Output**: Only creates translated files, no backup clutter
 - ✅ **Cross-Platform**: Works on Windows, macOS, and Linux
+- ✅ **Hybrid AI Translation**: Optional Gemini AI integration for missing words with automatic dictionary expansion
+- ✅ **Pre-Scanning**: Intelligently pre-scans files to collect missing words before translation
+- ✅ **Smart Model Detection**: Automatically detects and uses the best available Gemini API model
+- ✅ **Dual Dictionary Expansion**: AI translations are saved to both `cached_words.json` and `dictionary.json` for permanent storage
 
 ## Installation
 
@@ -545,12 +553,13 @@ The tool checks if strings are safe to translate by:
 
 ## Limitations
 
-### 1. Dictionary-Based Translation
+### 1. Dictionary-Based Translation (With Optional AI Enhancement)
 
-- Only translates exact matches found in the dictionary
-- Does not use AI, machine learning, or context-aware translation
-- Limited to ~10,000 common English words and phrases
-- Domain-specific terminology may not be translated
+- Primarily translates exact matches found in the dictionary
+- **Optional AI enhancement**: Can use Gemini AI for words not in dictionary (if enabled)
+- Built-in dictionary includes ~10,000+ common English words and phrases
+- Dictionary automatically expands with AI translations (if enabled)
+- Domain-specific terminology may require AI translation or manual addition
 
 ### 2. No Context Awareness
 
@@ -601,7 +610,93 @@ The tool includes a built-in dictionary with **10,000+ English-Arabic translatio
 
 The dictionary is stored in `src/dictionary.json` and is automatically loaded when the tool runs.
 
-**Note:** The dictionary is not user-extensible in the current version. If you need specific translations, you may need to manually edit the generated Arabic files.
+**Dictionary Expansion:**
+- The dictionary automatically expands through the Hybrid AI Translation feature
+- AI-translated words are permanently saved to `dictionary.json`
+- A secondary cache (`cached_words.json`) provides faster lookups
+- Both dictionaries are merged at runtime for optimal performance
+
+## Hybrid AI Translation
+
+The tool now includes an optional **Hybrid AI Translation** feature that uses Google's Gemini API to translate words not found in the dictionary, while maintaining the dictionary-first approach.
+
+### How It Works
+
+1. **Dictionary-First Priority**: The tool always checks the main dictionary (`dictionary.json`) first, then `cached_words.json`
+2. **Pre-Scanning Phase**: Before translation, the tool intelligently pre-scans all files to collect words and phrases not found in either dictionary
+3. **Smart Word Extraction**: Extracts translatable strings from JSON, HTML, and JavaScript/TypeScript files using the same parsing logic used for translation
+4. **AI Translation**: If AI is enabled and missing words are found, a single optimized API request is made to Gemini to translate all missing words at once
+5. **Smart Model Detection**: Automatically detects available Gemini models and tries multiple model versions for maximum compatibility
+6. **Dual Dictionary Expansion**: Successfully translated words are automatically saved to:
+   - `cached_words.json` (for immediate use in current session)
+   - `dictionary.json` (for permanent storage and future sessions)
+7. **Graceful Fallback**: If AI translation fails (network error, invalid key, quota exceeded, or model unavailable), the tool continues seamlessly with dictionary-only mode
+
+### Setup
+
+1. **Create `.env` file** in the project root:
+   ```bash
+   GEMINI_API_KEY="your-api-key-here"
+   ```
+
+2. **Get a Gemini API Key**:
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key
+   - Copy it to your `.env` file
+
+3. **Install dependencies** (if not already installed):
+   ```bash
+   npm install
+   ```
+
+The feature works automatically once the API key is configured. No code changes needed.
+
+### Features
+
+- ✅ **Dictionary-First**: Always prioritizes built-in dictionary and cached words
+- ✅ **Pre-Scanning**: Intelligently collects missing words before translation begins
+- ✅ **One Request Per Run**: All missing words are sent in a single API request for maximum efficiency
+- ✅ **Smart Model Detection**: Automatically tries multiple Gemini API models (gemini-1.5-pro, gemini-1.5-flash, etc.) for best compatibility
+- ✅ **Dual Dictionary Expansion**: New translations are automatically saved to both:
+  - `cached_words.json` (immediate use)
+  - `dictionary.json` (permanent storage)
+- ✅ **Graceful Fallback**: Works fully offline with dictionary-only mode if AI is unavailable
+- ✅ **No Crashes**: All errors are handled gracefully - translation continues even if AI fails
+- ✅ **Temp File Management**: Temporary files are automatically created and cleaned up after processing
+- ✅ **Robust JSON Parsing**: Handles various AI response formats (objects, arrays, markdown-wrapped JSON)
+- ✅ **Error Recovery**: Network errors, API failures, and parsing errors are all handled without interrupting translation
+
+### Configuration
+
+The AI feature can be enabled/disabled via `src/config/ai.ts`:
+- `AI_ENABLED`: Set to `true` to enable AI translation (default: `true`)
+- `GEMINI_API_KEY`: Automatically loaded from `.env` file
+
+### Important Notes
+
+- The `.env` file is automatically excluded from version control (added to `.gitignore`)
+- The API key is never hardcoded - it must be provided via environment variables
+- The feature accepts any valid Gemini API key - users provide their own
+- Works locally and in production with no code changes - just update the `.env` file
+
+### Example Workflow
+
+```bash
+# 1. Set up your API key
+echo 'GEMINI_API_KEY="your-key-here"' > .env
+
+# 2. Run translation
+npm start translate --project "./my-project"
+
+# Output:
+# Pre-scanning files for missing words...
+# Found 15 missing word(s). Attempting AI translation...
+# ✓ AI translated 15 word(s). Added to dictionary.
+# Translating 42 file(s)...
+# ...
+```
+
+The next time you run translation, those 15 words will be found in both `cached_words.json` and `dictionary.json` and won't require AI translation again. The dictionary grows automatically with each translation run!
 
 ## Excluded Files and Directories
 
@@ -792,6 +887,27 @@ ISC License - See LICENSE file for details
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/AhmedEl-hadad/Arabic-Localization-Helper/issues)
 - **Repository**: [View source code](https://github.com/AhmedEl-hadad/Arabic-Localization-Helper)
+
+## Recent Updates
+
+### Latest Features (v1.0.0+)
+
+- 🚀 **Hybrid AI Translation**: Integrated Google Gemini API for intelligent translation of missing words
+- 🎯 **Pre-Scanning System**: Intelligently pre-scans files to collect missing words before translation
+- 🔄 **Smart Model Detection**: Automatically detects and uses the best available Gemini API model
+- 📚 **Dual Dictionary Expansion**: AI translations are saved to both `cached_words.json` and `dictionary.json`
+- 🛡️ **Enhanced Error Handling**: Robust error recovery for network issues, API failures, and parsing errors
+- 🧹 **Automatic Cleanup**: Temporary files are automatically created and cleaned up
+- ⚡ **Optimized Performance**: Single API request per translation run for maximum efficiency
+- 🔍 **Improved JSON Parsing**: Handles various AI response formats (objects, arrays, markdown-wrapped JSON)
+
+### Previous Updates
+
+- ✅ CSS/SCSS/LESS RTL conversion support
+- ✅ HTML RTL attributes (`dir="rtl"` and `lang="ar"`) automatic addition
+- ✅ AST-based parsing for JavaScript/TypeScript files
+- ✅ Translation caching for improved performance
+- ✅ Boundary protection and smart exclusions
 
 ## Author
 
