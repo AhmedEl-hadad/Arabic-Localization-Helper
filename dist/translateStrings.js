@@ -32,14 +32,10 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.translateStrings = translateStrings;
 const acorn = __importStar(require("acorn"));
 const walk = __importStar(require("acorn-walk"));
-const dictionary_json_1 = __importDefault(require("./dictionary.json"));
 const safeReplace_1 = require("./utils/safeReplace");
 /**
  * Translates JavaScript/TypeScript/JSX/TSX files using AST parsing.
@@ -47,10 +43,12 @@ const safeReplace_1 = require("./utils/safeReplace");
  *
  * @param content - The source code content as string
  * @param cache - Optional cache for translations
+ * @param dict - The dictionary mapping English to Arabic (optional, will use default if not provided)
  * @returns Translated source code as string
  */
-function translateStrings(content, cache) {
-    const dict = dictionary_json_1.default;
+function translateStrings(content, cache, dict) {
+    // Use provided dictionary or fallback to default (for backward compatibility)
+    const translationDict = dict || require('./dictionary.json');
     // Parse the code with acorn
     // Support JSX by using ecmaVersion 2020 and sourceType module
     let ast;
@@ -91,8 +89,8 @@ function translateStrings(content, cache) {
                 }
                 else {
                     // Look up in dictionary
-                    if (dict[stringValue]) {
-                        translation = dict[stringValue];
+                    if (translationDict[stringValue]) {
+                        translation = translationDict[stringValue];
                         // Store in cache
                         if (cache) {
                             cache.set(stringValue, translation);
@@ -103,8 +101,8 @@ function translateStrings(content, cache) {
                         const words = stringValue.split(/\s+/);
                         const translatedWords = words.map((word) => {
                             const cleanWord = word.replace(/[.,;:!?()]/g, '');
-                            if (dict[cleanWord]) {
-                                return word.replace(cleanWord, dict[cleanWord]);
+                            if (translationDict[cleanWord]) {
+                                return word.replace(cleanWord, translationDict[cleanWord]);
                             }
                             return word;
                         });
@@ -180,8 +178,8 @@ function translateStrings(content, cache) {
         }
         else {
             // Look up in dictionary
-            if (dict[trimmed]) {
-                translation = dict[trimmed];
+            if (translationDict[trimmed]) {
+                translation = translationDict[trimmed];
                 if (cache) {
                     cache.set(trimmed, translation);
                 }

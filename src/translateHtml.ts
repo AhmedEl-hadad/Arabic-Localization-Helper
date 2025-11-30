@@ -1,4 +1,3 @@
-import dictionary from './dictionary.json';
 import { isSafeToTranslate, replaceWithWordBoundary, isWhitespaceOnly } from './utils/safeReplace';
 
 /**
@@ -12,13 +11,16 @@ import { isSafeToTranslate, replaceWithWordBoundary, isWhitespaceOnly } from './
  * 
  * @param content - The HTML content as string
  * @param cache - Optional cache for translations
+ * @param dict - The dictionary mapping English to Arabic (optional, will use default if not provided)
  * @returns Translated HTML content as string
  */
 export function translateHtml(
   content: string,
-  cache?: Map<string, string>
+  cache?: Map<string, string>,
+  dict?: Record<string, string>
 ): string {
-  const dict = dictionary as Record<string, string>;
+  // Use provided dictionary or fallback to default (for backward compatibility)
+  const translationDict = dict || (require('./dictionary.json') as Record<string, string>);
   let result = content;
   
   // Add or update dir="rtl" and lang="ar" to <html> tag
@@ -52,33 +54,69 @@ export function translateHtml(
     
     // Check cache first
     if (cache && cache.has(text)) {
-      return cache.get(text)!;
+      const cached = cache.get(text)!;
+      return cached;
     }
     
-    // Check if safe to translate
-    if (!isSafeToTranslate(text)) {
+    // Check if safe to translate (pass dictionary to allow words in dict even if they look like identifiers)
+    if (!isSafeToTranslate(text, translationDict)) {
       return text;
     }
     
-    // Look up in dictionary
-    let translated = text;
-    if (dict[text]) {
-      translated = dict[text];
+    // Try exact match first
+    let translated = translationDict[text];
+    // Try lowercase version if exact match not found
+    if (!translated) {
+      const lowerText = text.toLowerCase();
+      translated = translationDict[lowerText];
+      }
+    
+    if (translated) {
       // Store in cache
       if (cache) {
         cache.set(text, translated);
       }
-    } else {
-      // Try word-by-word translation for multi-word strings
-      const words = text.split(/\s+/);
-      const translatedWords = words.map((word: string) => {
-        const cleanWord = word.replace(/[.,;:!?()]/g, '');
-        if (dict[cleanWord]) {
-          return word.replace(cleanWord, dict[cleanWord]);
-        }
-        return word;
-      });
-      translated = translatedWords.join(' ');
+      return translated;
+    }
+    
+    // Try word-by-word translation for multi-word strings
+    const words = text.split(/\s+/);
+    const translatedWords = words.map((word: string) => {
+      // Try exact word match first
+      if (translationDict[word]) {
+        return translationDict[word];
+      }
+      
+      // Try lowercase version
+      const lowerWord = word.toLowerCase();
+      if (translationDict[lowerWord]) {
+        return translationDict[lowerWord];
+      }
+      
+      // Remove punctuation for dictionary lookup
+      const cleanWord = word.replace(/[.,;:!?()\[\]{}'"]/g, '');
+      
+      // Try clean word match
+      if (cleanWord && cleanWord !== word && translationDict[cleanWord]) {
+        // Replace the clean word with translation, preserving punctuation
+        return word.replace(cleanWord, translationDict[cleanWord]);
+      }
+      
+      // Try clean word lowercase
+      const cleanLowerWord = cleanWord.toLowerCase();
+      if (cleanWord && cleanWord !== word && translationDict[cleanLowerWord]) {
+        return word.replace(cleanWord, translationDict[cleanLowerWord]);
+      }
+      
+      // Word not found, return original
+      return word;
+    });
+    
+    translated = translatedWords.join(' ');
+    
+    // Only cache if we actually translated something
+    if (translated !== text && cache) {
+      cache.set(text, translated);
     }
     
     return translated;
@@ -100,6 +138,10 @@ export function translateHtml(
     
     // Preserve whitespace around text
     const trimmed = textContent.trim();
+    if (!trimmed || isWhitespaceOnly(trimmed)) {
+      return match;
+    }
+    
     const leadingWhitespace = textContent.match(/^\s*/)?.[0] || '';
     const trailingWhitespace = textContent.match(/\s*$/)?.[0] || '';
     

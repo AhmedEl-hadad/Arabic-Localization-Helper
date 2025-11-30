@@ -1,10 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.translateJson = translateJson;
-const dictionary_json_1 = __importDefault(require("./dictionary.json"));
 /**
  * Recursively translates English values in a JSON object to Arabic
  * using the dictionary. Preserves the structure of the JSON.
@@ -53,14 +49,16 @@ function translateObject(obj, dict, cache) {
  *
  * @param content - The JSON file content as string
  * @param cache - Optional cache for translations
+ * @param dict - The dictionary mapping English to Arabic (optional, will use default if not provided)
  * @returns Translated JSON content as string
  */
-function translateJson(content, cache) {
-    const dict = dictionary_json_1.default;
+function translateJson(content, cache, dict) {
+    // Use provided dictionary or fallback to default (for backward compatibility)
+    const translationDict = dict || require('./dictionary.json');
     // Parse JSON content
     const inputData = JSON.parse(content);
     // Translate the input data
-    const translatedData = translateObject(inputData, dict, cache);
+    const translatedData = translateObject(inputData, translationDict, cache);
     // Return as formatted JSON string
     return JSON.stringify(translatedData, null, 2);
 }

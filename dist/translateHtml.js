@@ -1,10 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.translateHtml = translateHtml;
-const dictionary_json_1 = __importDefault(require("./dictionary.json"));
 const safeReplace_1 = require("./utils/safeReplace");
 /**
  * Translates HTML content to Arabic.
@@ -17,10 +13,12 @@ const safeReplace_1 = require("./utils/safeReplace");
  *
  * @param content - The HTML content as string
  * @param cache - Optional cache for translations
+ * @param dict - The dictionary mapping English to Arabic (optional, will use default if not provided)
  * @returns Translated HTML content as string
  */
-function translateHtml(content, cache) {
-    const dict = dictionary_json_1.default;
+function translateHtml(content, cache, dict) {
+    // Use provided dictionary or fallback to default (for backward compatibility)
+    const translationDict = dict || require('./dictionary.json');
     let result = content;
     // Add or update dir="rtl" and lang="ar" to <html> tag
     result = result.replace(/<html\s*([^>]*)>/i, (match, attributes) => {
@@ -58,8 +56,8 @@ function translateHtml(content, cache) {
         }
         // Look up in dictionary
         let translated = text;
-        if (dict[text]) {
-            translated = dict[text];
+        if (translationDict[text]) {
+            translated = translationDict[text];
             // Store in cache
             if (cache) {
                 cache.set(text, translated);
@@ -70,8 +68,8 @@ function translateHtml(content, cache) {
             const words = text.split(/\s+/);
             const translatedWords = words.map((word) => {
                 const cleanWord = word.replace(/[.,;:!?()]/g, '');
-                if (dict[cleanWord]) {
-                    return word.replace(cleanWord, dict[cleanWord]);
+                if (translationDict[cleanWord]) {
+                    return word.replace(cleanWord, translationDict[cleanWord]);
                 }
                 return word;
             });

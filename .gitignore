@@ -16,3 +16,6 @@ translate-all.js
 
 # Utility files
 empty-keys.json
+
+# Environment variables
+.env

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import arg from 'arg';
 import * as fs from 'fs/promises';
 import * as path from 'path';

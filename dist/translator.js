@@ -45,6 +45,10 @@ const translateStrings_1 = require("./translateStrings");
 const translateCss_1 = require("./translateCss");
 const fileManager_1 = require("./utils/fileManager");
 const detectRoot_1 = require("./utils/detectRoot");
+const dictionaryLoader_1 = require("./utils/dictionaryLoader");
+const missingWordsCollector_1 = require("./utils/missingWordsCollector");
+const aiTranslator_1 = require("./services/aiTranslator");
+const ai_1 = require("./config/ai");
 /**
  * In-memory cache for translations
  * Key: original English text
@@ -94,6 +98,20 @@ function detectFileType(filePath) {
  * @returns Promise that resolves when translation is complete
  */
 async function translateFile(filePath, projectRoot) {
+    // Load merged dictionary for this file
+    const mergedDict = await (0, dictionaryLoader_1.loadMergedDictionary)();
+    await translateFileWithDict(filePath, projectRoot, mergedDict);
+}
+/**
+ * Translates a single file with a provided dictionary.
+ * Internal function used by translateFiles after AI processing.
+ *
+ * @param filePath - Absolute path to the file to translate
+ * @param projectRoot - Optional project root for boundary checking
+ * @param dict - Dictionary to use for translation
+ * @returns Promise that resolves when translation is complete
+ */
+async function translateFileWithDict(filePath, projectRoot, dict) {
     try {
         // CRITICAL: Reject files outside the project root
         const actualProjectRoot = projectRoot || (0, detectRoot_1.getProjectRoot)();
@@ -117,13 +135,13 @@ async function translateFile(filePath, projectRoot) {
         let translatedContent;
         switch (fileType) {
             case 'json':
-                translatedContent = (0, translateJson_1.translateJson)(content, translationCache);
+                translatedContent = (0, translateJson_1.translateJson)(content, translationCache, dict);
                 break;
             case 'html':
-                translatedContent = (0, translateHtml_1.translateHtml)(content, translationCache);
+                translatedContent = (0, translateHtml_1.translateHtml)(content, translationCache, dict);
                 break;
             case 'js':
-                translatedContent = (0, translateStrings_1.translateStrings)(content, translationCache);
+                translatedContent = (0, translateStrings_1.translateStrings)(content, translationCache, dict);
                 break;
             default:
                 throw new Error(`Unsupported file type: ${fileType}`);
@@ -153,43 +171,92 @@ async function translateFile(filePath, projectRoot) {
 async function translateFiles(filePaths, projectRoot) {
     let successCount = 0;
     let failCount = 0;
-    // Separate CSS files from text translation files
-    const textFiles = [];
-    const cssFiles = [];
-    for (const filePath of filePaths) {
-        const fileType = detectFileType(filePath);
-        if (fileType === 'css') {
-            cssFiles.push(filePath);
+    const actualProjectRoot = projectRoot || (0, detectRoot_1.getProjectRoot)();
+    const toolRoot = (0, detectRoot_1.getToolRoot)();
+    const tempFilePath = path.join(toolRoot, 'src', 'temp', 'missing_words.json');
+    try {
+        // Step 1: Load merged dictionary (dictionary + cached_words)
+        let mergedDict = await (0, dictionaryLoader_1.loadMergedDictionary)();
+        // Step 2: Pre-scan phase - collect missing words
+        console.log('\nPre-scanning files for missing words...');
+        const missingWords = await (0, missingWordsCollector_1.collectMissingWords)(filePaths, actualProjectRoot, mergedDict);
+        // Step 3: AI translation if enabled and missing words exist
+        if (ai_1.AI_ENABLED && missingWords.size > 0) {
+            console.log(`Found ${missingWords.size} missing word(s). Attempting AI translation...`);
+            try {
+                // Save missing words to temp file
+                await (0, missingWordsCollector_1.saveMissingWords)(missingWords, tempFilePath);
+                // Call AI translator
+                const aiTranslations = await (0, aiTranslator_1.translateMissingWords)();
+                if (Object.keys(aiTranslations).length > 0) {
+                    // Append AI translations to cached_words.json
+                    await (0, dictionaryLoader_1.appendToCachedWords)(aiTranslations);
+                    console.log(`✓ AI translated ${Object.keys(aiTranslations).length} word(s). Added to dictionary.`);
+                    // Reload merged dictionary with new translations
+                    mergedDict = await (0, dictionaryLoader_1.loadMergedDictionary)();
+                }
+                else {
+                    console.log('No AI translations received. Continuing with dictionary-only mode.');
+                }
+            }
+            catch (error) {
+                console.warn(`AI translation failed: ${error}. Continuing with dictionary-only mode.`);
+            }
+            finally {
+                // Always delete temp file
+                await (0, missingWordsCollector_1.deleteTempFile)(tempFilePath);
+            }
+        }
+        else if (missingWords.size > 0) {
+            console.log(`Found ${missingWords.size} missing word(s). AI translation is disabled.`);
         }
         else {
-            textFiles.push(filePath);
+            console.log('All words found in dictionary. No AI translation needed.');
         }
+        // Step 4: Continue with normal translation using updated dictionary
+        // Separate CSS files from text translation files
+        const textFiles = [];
+        const cssFiles = [];
+        for (const filePath of filePaths) {
+            const fileType = detectFileType(filePath);
+            if (fileType === 'css') {
+                cssFiles.push(filePath);
+            }
+            else {
+                textFiles.push(filePath);
+            }
+        }
+        console.log(`\nTranslating ${filePaths.length} file(s)...\n`);
+        // Process text translation files first (with merged dictionary)
+        for (const filePath of textFiles) {
+            try {
+                await translateFileWithDict(filePath, actualProjectRoot, mergedDict);
+                successCount++;
+            }
+            catch (error) {
+                failCount++;
+                // Continue with next file even if one fails
+            }
+        }
+        // Process CSS files after text translations
+        for (const filePath of cssFiles) {
+            try {
+                await translateFile(filePath, actualProjectRoot);
+                successCount++;
+            }
+            catch (error) {
+                failCount++;
+                // Continue with next file even if one fails
+            }
+        }
+        console.log(`\nTranslation complete: ${successCount} succeeded, ${failCount} failed`);
+        console.log(`Cache size: ${translationCache.size} entries`);
     }
-    console.log(`\nTranslating ${filePaths.length} file(s)...\n`);
-    // Process text translation files first
-    for (const filePath of textFiles) {
-        try {
-            await translateFile(filePath, projectRoot);
-            successCount++;
-        }
-        catch (error) {
-            failCount++;
-            // Continue with next file even if one fails
-        }
+    catch (error) {
+        // Ensure temp file is deleted even on error
+        await (0, missingWordsCollector_1.deleteTempFile)(tempFilePath);
+        throw error;
     }
-    // Process CSS files after text translations
-    for (const filePath of cssFiles) {
-        try {
-            await translateFile(filePath, projectRoot);
-            successCount++;
-        }
-        catch (error) {
-            failCount++;
-            // Continue with next file even if one fails
-        }
-    }
-    console.log(`\nTranslation complete: ${successCount} succeeded, ${failCount} failed`);
-    console.log(`Cache size: ${translationCache.size} entries`);
 }
 /**
  * Legacy function for backward compatibility
