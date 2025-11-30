@@ -89,12 +89,39 @@ The tool includes optional **Hybrid AI Translation** using Google's Gemini API f
 
 1. Create `.env` file in the project root:
    ```bash
+   # Single API key (backward compatible)
    GEMINI_API_KEY="your-api-key-here"
+   
+   # OR multiple API keys with automatic rotation (recommended)
+   GEMINI_API_KEYS="key1,key2,key3,key4"
    ```
 
-2. Get a Gemini API Key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Get Gemini API Key(s) from [Google AI Studio](https://makersuite.google.com/app/apikey)
 
 3. The feature works automatically once configured. No code changes needed.
+
+### API Key Rotation (New!)
+
+The tool now supports **automatic API key rotation** for improved reliability and rate limit handling:
+
+- **Multiple Keys**: Use `GEMINI_API_KEYS` with comma-separated keys for automatic rotation
+- **Smart Rotation**: Automatically switches to the next key on rate limits (429) or invalid key errors (401/403)
+- **Infinite Loop**: Cycles through all keys and loops back to the first when reaching the end
+- **Automatic Retry**: Retries failed requests with the next available key without stopping the process
+- **Detailed Logging**: See which key is being used and why keys are rotated
+- **Backward Compatible**: Still supports single `GEMINI_API_KEY` for existing setups
+
+**Example:**
+```bash
+# .env file
+GEMINI_API_KEYS="key1,key2,key3,key4"
+```
+
+The system will:
+- Start with the first key
+- Automatically rotate to the next key if rate limited or invalid
+- Loop back to the first key after the last one
+- Only fail if ALL keys are exhausted
 
 ### Features
 
@@ -103,6 +130,9 @@ The tool includes optional **Hybrid AI Translation** using Google's Gemini API f
 - ✅ Automatic dictionary expansion
 - ✅ Works offline if AI is unavailable
 - ✅ Robust error handling
+- ✅ **Automatic API key rotation** (multiple keys supported)
+- ✅ **Rate limit handling** (auto-switches keys on 429 errors)
+- ✅ **Detailed rotation logging** (see which key is active)
 
 ## Output Files
 

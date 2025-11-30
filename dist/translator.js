@@ -192,6 +192,21 @@ async function translateFiles(filePaths, projectRoot) {
                     // Append AI translations to cached_words.json
                     await (0, dictionaryLoader_1.appendToCachedWords)(aiTranslations);
                     console.log(`✓ AI translated ${Object.keys(aiTranslations).length} word(s). Added to dictionary.`);
+                    // Merge AI translations into main dictionary.json for permanent storage
+                    await (0, dictionaryLoader_1.mergeToMainDictionary)(aiTranslations);
+                    // Track words that were requested but not translated by AI
+                    const requestedWords = Array.from(missingWords);
+                    const translatedWords = Object.keys(aiTranslations);
+                    const untranslatedWords = requestedWords.filter(word => !translatedWords.includes(word));
+                    if (untranslatedWords.length > 0) {
+                        console.warn(`⚠ Warning: ${untranslatedWords.length} word(s) were requested from AI but not returned:`);
+                        untranslatedWords.slice(0, 10).forEach(word => {
+                            console.warn(`  - "${word}"`);
+                        });
+                        if (untranslatedWords.length > 10) {
+                            console.warn(`  ... and ${untranslatedWords.length - 10} more`);
+                        }
+                    }
                     // Reload merged dictionary with new translations
                     mergedDict = await (0, dictionaryLoader_1.loadMergedDictionary)();
                 }
