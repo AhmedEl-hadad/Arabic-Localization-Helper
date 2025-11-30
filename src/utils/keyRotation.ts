@@ -62,16 +62,32 @@ function isRateLimitError(status: number): boolean {
 
 /**
  * Checks if an error response indicates an invalid key
+ * Also checks for 400 status with "API key not valid" message (Gemini API specific)
  */
-function isInvalidKeyError(status: number): boolean {
-  return status === 401 || status === 403;
+function isInvalidKeyError(status: number, errorText?: string): boolean {
+  // Standard invalid key status codes
+  if (status === 401 || status === 403) {
+    return true;
+  }
+  
+  // Gemini API returns 400 for invalid keys with specific error message
+  if (status === 400 && errorText) {
+    const lowerError = errorText.toLowerCase();
+    return lowerError.includes('api key not valid') || 
+           lowerError.includes('invalid api key') ||
+           lowerError.includes('please pass a valid api key');
+  }
+  
+  return false;
 }
 
 /**
  * Checks if an error should trigger key rotation
+ * @param status HTTP status code
+ * @param errorText Optional error message text (needed for 400 status codes)
  */
-function shouldRotateKey(status: number): boolean {
-  return isRateLimitError(status) || isInvalidKeyError(status);
+function shouldRotateKey(status: number, errorText?: string): boolean {
+  return isRateLimitError(status) || isInvalidKeyError(status, errorText);
 }
 
 /**
@@ -91,7 +107,7 @@ function getSkipReason(status: number, errorText?: string): string {
   if (isRateLimitError(status)) {
     return 'Rate limit reached';
   }
-  if (isInvalidKeyError(status)) {
+  if (isInvalidKeyError(status, errorText)) {
     return 'Invalid API key';
   }
   if (errorText) {
@@ -152,17 +168,17 @@ export async function fetchWithRotation(
         return response;
       }
       
+      // Extract error text BEFORE checking shouldRotateKey (needed for 400 status codes)
+      let errorText: string | undefined;
+      try {
+        errorText = await response.text();
+      } catch {
+        // Ignore text extraction errors
+        errorText = undefined;
+      }
+      
       // Response is not ok - check if we should rotate
-      if (shouldRotateKey(response.status)) {
-        // Extract error text for logging
-        let errorText: string | undefined;
-        try {
-          errorText = await response.text();
-        } catch {
-          // Ignore text extraction errors
-          errorText = undefined;
-        }
-        
+      if (shouldRotateKey(response.status, errorText)) {
         const reason = getSkipReason(response.status, errorText);
         console.warn(`[Key Rotation] Key #${keyIndex + 1} failed: ${reason} → trying next key`);
         
@@ -260,16 +276,16 @@ export async function makeApiCallWithRotation<T>(
       
       if (error?.status) {
         status = error.status;
-        shouldRotate = status !== undefined && shouldRotateKey(status);
         errorText = error.message || error.toString();
+        shouldRotate = status !== undefined && shouldRotateKey(status, errorText);
       } else if (error?.response?.status) {
         status = error.response.status;
-        shouldRotate = status !== undefined && shouldRotateKey(status);
         try {
           errorText = await error.response.text();
         } catch {
           errorText = error.message || error.toString();
         }
+        shouldRotate = status !== undefined && shouldRotateKey(status, errorText);
       }
       
       // If we should rotate, move to next key
