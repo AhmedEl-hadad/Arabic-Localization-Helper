@@ -164,6 +164,9 @@ export async function translateFiles(
   filePaths: string[],
   projectRoot?: string
 ): Promise<void> {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translator.ts:163',message:'translateFiles entry',data:{fileCount:filePaths.length,firstFewFiles:filePaths.slice(0,5),projectRoot},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
   let successCount = 0;
   let failCount = 0;
   
@@ -177,6 +180,9 @@ export async function translateFiles(
     // Step 2: Pre-scan phase - collect missing words
     console.log('\nPre-scanning files for missing words...');
     const missingWords = await collectMissingWords(filePaths, actualProjectRoot, mergedDict);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translator.ts:179',message:'missing words collected',data:{missingWordsCount:missingWords.size},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     // Step 3: AI translation if enabled and missing words exist
     if (AI_ENABLED && missingWords.size > 0) {
       console.log(`Found ${missingWords.size} missing word(s). Attempting AI translation...`);
@@ -241,13 +247,22 @@ export async function translateFiles(
     }
     
     console.log(`\nTranslating ${filePaths.length} file(s)...\n`);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translator.ts:243',message:'starting translation loop',data:{textFilesCount:textFiles.length,cssFilesCount:cssFiles.length,totalFiles:filePaths.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     
     // Process text translation files first (with merged dictionary)
     for (const filePath of textFiles) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translator.ts:247',message:'translating text file',data:{filePath,successCount,failCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       try {
         await translateFileWithDict(filePath, actualProjectRoot, mergedDict);
         successCount++;
       } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translator.ts:252',message:'text file translation error',data:{filePath,errorMessage:error instanceof Error ? error.message : String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         failCount++;
         // Continue with next file even if one fails
       }
@@ -255,10 +270,16 @@ export async function translateFiles(
     
     // Process CSS files after text translations
     for (const filePath of cssFiles) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translator.ts:259',message:'translating css file',data:{filePath,successCount,failCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       try {
         await translateFile(filePath, actualProjectRoot);
         successCount++;
       } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'translator.ts:264',message:'css file translation error',data:{filePath,errorMessage:error instanceof Error ? error.message : String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         failCount++;
         // Continue with next file even if one fails
       }

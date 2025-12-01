@@ -26,6 +26,9 @@ const args = arg({
  * @returns Custom project root path if provided, undefined otherwise
  */
 function getCustomProjectRoot(): string | undefined {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:28',message:'getCustomProjectRoot entry',data:{args_:args._,argsProject:args['--project'],argsTarget:args['--target']},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   // First, try explicit flags
   let result = args['--project'] || args['--target'];
   
@@ -36,6 +39,9 @@ function getCustomProjectRoot(): string | undefined {
     // Check remaining positionals for what looks like a path
     for (let i = 1; i < args._.length; i++) {
       const potentialPath = args._[i];
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:40',message:'checking positional arg',data:{i,potentialPath,isPath:potentialPath && (potentialPath.includes('\\') || potentialPath.includes('/') || (potentialPath.length > 2 && potentialPath[1] === ':'))},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       // If it contains path separators or looks like an absolute path, treat it as project root
       if (potentialPath && (potentialPath.includes('\\') || potentialPath.includes('/') || 
           (potentialPath.length > 2 && potentialPath[1] === ':'))) {
@@ -45,6 +51,9 @@ function getCustomProjectRoot(): string | undefined {
     }
   }
   
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:48',message:'getCustomProjectRoot exit',data:{result},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   return result;
 }
 
@@ -119,6 +128,9 @@ async function handleScan(): Promise<void> {
  */
 async function handleTranslate(): Promise<void> {
   const customProjectRoot = getCustomProjectRoot();
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:121',message:'handleTranslate entry',data:{customProjectRoot},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   console.log('Starting translation process...\n');
   
   try {
@@ -127,9 +139,15 @@ async function handleTranslate(): Promise<void> {
     
     // Get project root for boundary checking
     const projectRoot = getProjectRoot(customProjectRoot);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:129',message:'project root resolved',data:{projectRoot},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     
     // Scan for files
     const files = await scanFiles(customProjectRoot);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:132',message:'scanFiles result',data:{fileCount:files.length,firstFewFiles:files.slice(0,5)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     
     if (files.length === 0) {
       console.log('No files found to translate.');
@@ -142,6 +160,9 @@ async function handleTranslate(): Promise<void> {
     console.log('\n✓ All translations completed!');
     
   } catch (error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/e64cd474-5b87-4cea-aa55-09ab429f0d66',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.ts:145',message:'handleTranslate error',data:{errorMessage:error instanceof Error ? error.message : String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     console.error('Translation failed:', error);
     process.exit(1);
   }
