@@ -1,7 +1,8 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { GEMINI_API_KEY, isApiKeyAvailable } from '../config/ai';
+import { isApiKeyAvailable } from '../config/ai';
 import { getToolRoot } from '../utils/detectRoot';
+import { fetchWithRotation } from '../utils/keyRotation';
 
 function getMissingWordsPath(): string {
   const toolRoot = getToolRoot();
@@ -79,7 +80,7 @@ function extractJsonFromResponse(response: string): string {
 export async function translateMissingWords(): Promise<Record<string, string>> {
   // Check if API key is available
   if (!isApiKeyAvailable()) {
-    console.warn('Gemini API key missing. Add GEMINI_API_KEY to .env');
+    console.warn('Gemini API key missing. Add GEMINI_API_KEYS (comma-separated) or GEMINI_API_KEY to .env');
     return {};
   }
 
@@ -102,8 +103,9 @@ ${JSON.stringify(words, null, 2)}`;
     // First, try to get available models (optional - if this fails, we'll try common names)
     let availableModels: string[] = [];
     try {
-      const listModelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`;
-      const listResponse = await fetch(listModelsUrl);
+      const listResponse = await fetchWithRotation(
+        (key: string) => `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`
+      );
       if (listResponse.ok) {
         const listData = await listResponse.json() as any;
         if (listData.models) {
@@ -137,29 +139,40 @@ ${JSON.stringify(words, null, 2)}`;
     let lastError = '';
     
     for (const attempt of modelAttempts) {
-      const apiUrl = `https://generativelanguage.googleapis.com/${attempt.version}/models/${attempt.model}:generateContent?key=${GEMINI_API_KEY}`;
       apiVersion = attempt.version;
       modelName = attempt.model;
       
-      response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }]
-      })
-      });
-      
-      if (response.ok) {
-        break; // Success! Exit the loop
-      } else {
-        const errorText = await response.text();
-        lastError = errorText;
+      try {
+        // Use fetchWithRotation to automatically handle key rotation
+        response = await fetchWithRotation(
+          (key: string) => `https://generativelanguage.googleapis.com/${attempt.version}/models/${attempt.model}:generateContent?key=${key}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: prompt
+                }]
+              }]
+            })
+          }
+        );
+        
+        if (response.ok) {
+          break; // Success! Exit the loop
+        } else {
+          // Response is not ok, but not a rotation-worthy error
+          // Try next model
+          const errorText = await response.text();
+          lastError = errorText;
+          response = null; // Continue to next attempt
+        }
+      } catch (error: any) {
+        // All keys failed for this model, try next model
+        lastError = error.message || error.toString();
         response = null; // Continue to next attempt
       }
     }

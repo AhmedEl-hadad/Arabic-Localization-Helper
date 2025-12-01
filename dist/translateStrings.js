@@ -77,8 +77,8 @@ function translateStrings(content, cache, dict) {
                 if (!stringValue || stringValue.trim().length === 0) {
                     return;
                 }
-                // Check if safe to translate
-                if (!(0, safeReplace_1.isSafeToTranslate)(stringValue)) {
+                // Check if safe to translate (pass dictionary to allow words in dict even if they look like identifiers)
+                if (!(0, safeReplace_1.isSafeToTranslate)(stringValue, translationDict)) {
                     return;
                 }
                 // Get translation
@@ -88,9 +88,10 @@ function translateStrings(content, cache, dict) {
                     translation = cache.get(stringValue);
                 }
                 else {
-                    // Look up in dictionary
-                    if (translationDict[stringValue]) {
-                        translation = translationDict[stringValue];
+                    // Try exact match first
+                    const exactMatch = translationDict[stringValue];
+                    if (exactMatch) {
+                        translation = exactMatch;
                         // Store in cache
                         if (cache) {
                             cache.set(stringValue, translation);
@@ -100,13 +101,25 @@ function translateStrings(content, cache, dict) {
                         // Try word-by-word for multi-word strings
                         const words = stringValue.split(/\s+/);
                         const translatedWords = words.map((word) => {
-                            const cleanWord = word.replace(/[.,;:!?()]/g, '');
-                            if (translationDict[cleanWord]) {
+                            // Try exact word match first
+                            if (translationDict[word]) {
+                                return translationDict[word];
+                            }
+                            // Remove punctuation for dictionary lookup
+                            const cleanWord = word.replace(/[.,;:!?()\[\]{}'"]/g, '');
+                            // Try clean word match
+                            if (cleanWord && cleanWord !== word && translationDict[cleanWord]) {
+                                // Replace the clean word with translation, preserving punctuation
                                 return word.replace(cleanWord, translationDict[cleanWord]);
                             }
+                            // Word not found, return original
                             return word;
                         });
                         translation = translatedWords.join(' ');
+                        // Only cache if we actually translated something
+                        if (translation !== stringValue && cache) {
+                            cache.set(stringValue, translation);
+                        }
                     }
                 }
                 // Only add replacement if translation is different
@@ -167,7 +180,7 @@ function translateStrings(content, cache, dict) {
         }
         // Check if this is JSX text (between > and <, not inside quotes or expressions)
         const trimmed = textContent.trim();
-        if (!trimmed || !(0, safeReplace_1.isSafeToTranslate)(trimmed)) {
+        if (!trimmed || !(0, safeReplace_1.isSafeToTranslate)(trimmed, translationDict)) {
             return match;
         }
         // Get translation
@@ -177,10 +190,50 @@ function translateStrings(content, cache, dict) {
             translation = cache.get(trimmed);
         }
         else {
-            // Look up in dictionary
-            if (translationDict[trimmed]) {
-                translation = translationDict[trimmed];
+            // Try exact match first
+            let exactMatch = translationDict[trimmed];
+            // Try lowercase version if exact match not found
+            if (!exactMatch) {
+                const lowerTrimmed = trimmed.toLowerCase();
+                exactMatch = translationDict[lowerTrimmed];
+            }
+            if (exactMatch) {
+                translation = exactMatch;
                 if (cache) {
+                    cache.set(trimmed, translation);
+                }
+            }
+            else {
+                // Try word-by-word for multi-word strings
+                const words = trimmed.split(/\s+/);
+                const translatedWords = words.map((word) => {
+                    // Try exact word match first
+                    if (translationDict[word]) {
+                        return translationDict[word];
+                    }
+                    // Try lowercase version
+                    const lowerWord = word.toLowerCase();
+                    if (translationDict[lowerWord]) {
+                        return translationDict[lowerWord];
+                    }
+                    // Remove punctuation for dictionary lookup
+                    const cleanWord = word.replace(/[.,;:!?()\[\]{}'"]/g, '');
+                    // Try clean word match
+                    if (cleanWord && cleanWord !== word && translationDict[cleanWord]) {
+                        // Replace the clean word with translation, preserving punctuation
+                        return word.replace(cleanWord, translationDict[cleanWord]);
+                    }
+                    // Try clean word lowercase
+                    const cleanLowerWord = cleanWord.toLowerCase();
+                    if (cleanWord && cleanWord !== word && translationDict[cleanLowerWord]) {
+                        return word.replace(cleanWord, translationDict[cleanLowerWord]);
+                    }
+                    // Word not found, return original
+                    return word;
+                });
+                translation = translatedWords.join(' ');
+                // Only cache if we actually translated something
+                if (translation !== trimmed && cache) {
                     cache.set(trimmed, translation);
                 }
             }

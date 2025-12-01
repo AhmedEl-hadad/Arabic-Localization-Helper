@@ -11,9 +11,10 @@ exports.isWhitespaceOnly = isWhitespaceOnly;
  * Checks if a string should be translated based on safety rules.
  *
  * @param text - The text to check
+ * @param dict - Optional dictionary to check if word exists (if in dict, allow translation even if looks like identifier)
  * @returns true if the text is safe to translate, false otherwise
  */
-function isSafeToTranslate(text) {
+function isSafeToTranslate(text, dict) {
     // Skip empty strings
     if (!text || text.trim().length === 0) {
         return false;
@@ -31,9 +32,34 @@ function isSafeToTranslate(text) {
     if (/^[\d\s\-_.,;:!?()]+$/.test(text)) {
         return false;
     }
+    // If dictionary is provided and word exists in it, allow translation
+    // (even if it looks like an identifier - it's clearly meant to be translated)
+    if (dict && dict[text]) {
+        return true;
+    }
+    // Check lowercase version for case-insensitive matching
+    if (dict) {
+        const lowerText = text.toLowerCase();
+        if (dict[lowerText]) {
+            return true;
+        }
+    }
     // Skip strings that look like identifiers (camelCase, snake_case, etc.)
-    if (/^[a-z][a-zA-Z0-9_]*$/.test(text) || /^[A-Z][a-zA-Z0-9_]*$/.test(text)) {
+    // BUT allow capitalized single words (PascalCase) that aren't in dictionary - they might be proper nouns/titles
+    // that should be translated by AI
+    if (/^[a-z][a-zA-Z0-9_]*$/.test(text)) {
+        // Lowercase camelCase - likely code identifier, reject
         return false;
+    }
+    // For PascalCase (capitalized) words:
+    if (/^[A-Z][a-zA-Z0-9_]*$/.test(text)) {
+        // If it contains numbers or underscores, it's likely code - reject
+        if (/\d/.test(text) || text.includes('_')) {
+            return false;
+        }
+        // Pure capitalized word (no numbers/underscores) - allow it even if not in dict
+        // This allows proper nouns/titles to be collected for AI translation
+        return true;
     }
     return true;
 }
