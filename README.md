@@ -49,6 +49,19 @@ npx arabic-localization-helper scan --project "/path/to/your/project"
    npm start translate --project "/path/to/your/project"
    ```
 
+## Deploying the Latest Release
+
+To run the most up-to-date build (v1.0.0 at the time of writing) locally or before publishing:
+
+1. `git pull` to ensure you have the latest tag/commit.
+2. `npm install` to sync dependencies.
+3. `npm run build` to refresh the `dist/` output shipped in the package.
+4. `npm start scan --project "<your project>"` to verify the scan results.
+5. `npm start translate --project "<your project>"` to generate `-ar` files.
+6. (Optional) `npm pack` or `npm publish` when you're ready to share the final build.
+
+You can also consume the latest public release directly with `npx arabic-localization-helper@latest scan --project "<your project>"`.
+
 **Note:** If no `--project` flag is specified, the tool scans the parent directory of the tool installation.
 
 ## Commands
@@ -91,6 +104,9 @@ The tool includes optional **Hybrid AI Translation** using Google's Gemini API f
    ```bash
    GEMINI_API_KEY="your-api-key-here"
    ```
+
+   > Demo/testing-only key for the hosted preview (won't work in production):
+   > `GEMINI_API_KEY="AIzaSyCxbSbEWDIKWIFyox24BRYq_-mA93bWwJI"`
 
 2. Get a Gemini API Key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 

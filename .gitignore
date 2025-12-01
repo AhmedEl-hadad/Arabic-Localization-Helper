@@ -1,7 +1,14 @@
 node_modules/
 dist/
+coverage/
+*.tsbuildinfo
+package-lock.backup.*
+npm-debug.log*
 *.log
 .DS_Store
+.vercel/
+.turbo/
+tmp/
 
 # Test files and translated outputs
 test.json
@@ -19,3 +26,4 @@ empty-keys.json
 
 # Environment variables
 # .env is kept in repo for demo purposes - users can replace it with their own API key
+# .env.local, .env.development, etc. should stay private – add them locally if needed.
