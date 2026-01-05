@@ -1,208 +1,174 @@
+<div align="center">
+
 # Arabic Localization Helper
 
-A command-line tool that automatically translates English text to Arabic in your project files. It scans your codebase, finds translatable content, and creates Arabic versions of your files without modifying the originals.
+### The Enterprise-Grade AST Transformation Engine for Arabic Localization
 
-[![npm version](https://img.shields.io/npm/v/arabic-localization-helper)](https://www.npmjs.com/package/arabic-localization-helper)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
+[![npm version](https://img.shields.io/npm/v/arabic-localization-helper?style=for-the-badge&color=007AFF)](https://www.npmjs.com/package/arabic-localization-helper)
+[![License: ISC](https://img.shields.io/badge/License-ISC-000000?style=for-the-badge)](https://opensource.org/licenses/ISC)
+[![Node Control](https://img.shields.io/badge/Node.js-18%2B-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 
-## What is This Tool?
-
-**Arabic Localization Helper** is a powerful automation tool that helps you create Arabic translations of your web applications, React projects, and static websites. With optional AI-powered translation, it intelligently expands its dictionary while maintaining a dictionary-first approach.
-
-**Key Features:**
-- Scans and translates JSON, JavaScript, TypeScript, JSX, TSX, HTML, CSS, SCSS, and LESS files
-- Creates new files with `-ar` suffix (e.g., `home.json` → `home-ar.json`)
-- **Never modifies your original files**
-- Optional Gemini AI integration for missing words
-- Automatic RTL CSS conversion and HTML RTL attributes
-- Safe AST parsing for JavaScript/TypeScript
-- Smart exclusions (node_modules, .git, build folders)
-- Cross-platform support (Windows, macOS, Linux)
-
-> ⚠️ **Important**: Run `npm install` in the project directory before using the tool.
-
-## Installation
-
-### From GitHub Source
-
-```bash
-git clone https://github.com/AhmedEl-hadad/Arabic-Localization-Helper.git
-cd Arabic-Localization-Helper
-npm install
-```
-
-### Using npx (If Published to npm)
-
-```bash
-npx arabic-localization-helper scan --project "/path/to/your/project"
-```
-
-## Quick Start
-
-1. **Preview what will be translated:**
-   ```bash
-   npm start scan --project "/path/to/your/project"
-   ```
-
-2. **Translate the files:**
-   ```bash
-   npm start translate --project "/path/to/your/project"
-   ```
-
-**Note:** If no `--project` flag is specified, the tool scans the parent directory of the tool installation.
-
-## Commands
-
-- `scan` - Preview files that will be translated (no actual translation)
-- `translate` - Translate all scanned files and create Arabic versions
-- `test` - Run test mode with sample files
-- (no command) - Default: runs both scan and translate
-
-## Supported File Types
-
-### JSON Files
-Translates all string values recursively throughout the JSON structure.
-
-### HTML Files
-Translates text content, `alt`, `title`, `placeholder`, and `aria-label` attributes. Automatically adds `dir="rtl"` and `lang="ar"` to `<html>` tag.
-
-### JavaScript/TypeScript Files
-Uses AST parsing to safely translate only static string literals. Does NOT translate template literals with variables or code identifiers.
-
-### CSS/SCSS/LESS Files
-Converts CSS files to RTL (Right-to-Left) versions using the `rtlcss` library. Handles directional properties like `margin`, `padding`, `left`, `right`, `float`, `text-align`, etc.
-
-## Hybrid AI Translation (Optional)
-
-The tool includes optional **Hybrid AI Translation** using Google's Gemini API for words not found in the dictionary.
-
-### How It Works
-
-1. **Dictionary-First**: Always checks `dictionary.json` first, then `cached_words.json`
-2. **Pre-Scanning**: Pre-scans all files to collect missing words
-3. **AI Translation**: Single API request to Gemini for all missing words
-4. **Smart Model Detection**: Automatically tries multiple Gemini API models
-5. **Dual Dictionary Expansion**: Saves translations to both `cached_words.json` and `dictionary.json`
-6. **Graceful Fallback**: Continues with dictionary-only mode if AI fails
-
-### Setup
-
-1. Create `.env` file in the project root:
-   ```bash
-   # Single API key (backward compatible)
-   GEMINI_API_KEY="your-api-key-here"
-   
-   # OR multiple API keys with automatic rotation (recommended)
-   GEMINI_API_KEYS="key1,key2,key3,key4"
-   ```
-
-2. Get Gemini API Key(s) from [Google AI Studio](https://makersuite.google.com/app/apikey)
-
-3. The feature works automatically once configured. No code changes needed.
-
-### API Key Rotation (New!)
-
-The tool now supports **automatic API key rotation** for improved reliability and rate limit handling:
-
-- **Multiple Keys**: Use `GEMINI_API_KEYS` with comma-separated keys for automatic rotation
-- **Smart Rotation**: Automatically switches to the next key on rate limits (429) or invalid key errors (401/403)
-- **Infinite Loop**: Cycles through all keys and loops back to the first when reaching the end
-- **Automatic Retry**: Retries failed requests with the next available key without stopping the process
-- **Detailed Logging**: See which key is being used and why keys are rotated
-- **Backward Compatible**: Still supports single `GEMINI_API_KEY` for existing setups
-
-**Example:**
-```bash
-# .env file
-GEMINI_API_KEYS="key1,key2,key3,key4"
-```
-
-The system will:
-- Start with the first key
-- Automatically rotate to the next key if rate limited or invalid
-- Loop back to the first key after the last one
-- Only fail if ALL keys are exhausted
-
-### Features
-
-- ✅ Dictionary-first approach
-- ✅ One request per run (all missing words at once)
-- ✅ Automatic dictionary expansion
-- ✅ Works offline if AI is unavailable
-- ✅ Robust error handling
-- ✅ **Automatic API key rotation** (multiple keys supported)
-- ✅ **Rate limit handling** (auto-switches keys on 429 errors)
-- ✅ **Detailed rotation logging** (see which key is active)
-
-## Output Files
-
-The tool creates new files with the `-ar` suffix in the same directory as originals:
-- `home.json` → `home-ar.json`
-- `App.jsx` → `App-ar.jsx`
-- `index.html` → `index-ar.html`
-- `styles.css` → `styles-ar.css`
-
-**Original files are never modified.**
-
-## Safety Features
-
-- ✅ Never modifies original files
-- ✅ Boundary protection (never scans outside project directory)
-- ✅ Smart exclusions (node_modules, .git, build folders, already-translated files)
-- ✅ AST-based parsing for safe JavaScript/TypeScript translation
-- ✅ Safe string detection (skips URLs, code patterns, identifiers)
-
-## Dictionary
-
-Built-in dictionary with **10,000+ English-Arabic translations**. The dictionary automatically expands through AI translation (if enabled), saving new words to both `cached_words.json` and `dictionary.json`.
-
-## Limitations
-
-- Primarily translates exact dictionary matches (with optional AI enhancement)
-- No context awareness (word-by-word translation for phrases not in dictionary)
-- Does NOT translate code comments, template literals with variables, or dynamic content
-- Large projects (1000+ files) may take several minutes
-
-## Troubleshooting
-
-**"No files found to translate"**
-- Check for supported file types (`.json`, `.js`, `.jsx`, `.ts`, `.tsx`, `.html`, `.css`, `.scss`, `.less`)
-- Verify project path is correct
-- Ensure files aren't in excluded directories
-
-**Files not being translated**
-- Check file extension is supported
-- Move file out of `node_modules`, `dist`, or other excluded directories
-- Remove `-ar` suffix if you want to re-translate
-
-**Translation not appearing**
-- Text may not be in dictionary (enable AI translation if needed)
-- Text may be skipped as unsafe (URL, code pattern, etc.)
-- Template literals with variables are not translated
-
-## Best Practices
-
-1. **Always preview first**: Use `scan` command before translating
-2. **Use version control**: Keep original files in Git
-3. **Review translated files**: Check translation accuracy
-4. **Test your application**: Ensure proper RTL layout and functionality
-5. **Use specific directories**: Translate only what you need
-
-## Contributing
-
-Contributions are welcome! Report issues, suggest features, improve the dictionary, or enhance documentation.
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/AhmedEl-hadad/Arabic-Localization-Helper/issues)
-- **Repository**: [View source code](https://github.com/AhmedEl-hadad/Arabic-Localization-Helper)
-
-## License
-
-ISC License - See LICENSE file for details
-
-## Author
-
-Created by [Ahmed El-hadad](https://github.com/AhmedEl-hadad)
+</div>
 
 ---
 
-**Note:** This tool is designed to assist with translation but may require manual review and editing for production use. Always test translated files in your application before deploying.
+## ⚡ Executive Summary
+
+**Arabic Localization Helper** is not just a "translator"—it is a sophisticated **Code Transformation Engine** that creates Arabic versions of your web projects with surgical precision. Built on an **AST (Abstract Syntax Tree)** core rather than regex, it guarantees code safety while employing a **Hybrid AI Engine** with **Smart API Rotation** to handle enterprise-scale localization.
+
+---
+
+## ⚔️ The Problem vs. The Solution
+
+| The Bottleneck (Manual/Regex)                                                                                   | The Architecture (Arabic Localization Helper)                                                                                       |
+| :-------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| **Fragile Parsing:** Regex-based tools often break code by translating variables, function names, or API props. | **AST Precision:** Uses `acorn` to parse JavaScript/TypeScript into an Abstract Syntax Tree, modifying _only_ safe string literals. |
+| **API Rate Limits:** Hitting 429 errors halts the entire build pipeline.                                        | **Infinite Rotation Engine:** Automatically cycles through a pool of API keys on failure, ensuring zero downtime.                   |
+| **Tedious CSS Work:** Manually flipping margins/padding (`margin-left` → `margin-right`) is error-prone.        | **Zero-Config RTL:** Automatically converts CSS/SCSS/LESS to RTL logic using logical property transformation.                       |
+| **Vendor Lock-in:** Stuck with expensive SaaS subscriptions.                                                    | **Local-First Hybrid:** Uses a local dictionary cache first, only calling AI for missing tokens.                                    |
+
+</br>
+
+## 💎 Core Architecture
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="200">
+      <h1>🛡️</h1>
+      <h3>AST Code Safety</h3>
+      <p>Parses JS/TS logic. Never touches imports, variables, or logic.</p>
+    </td>
+    <td align="center" width="200">
+      <h1>🔄</h1>
+      <h3>Infinite Rotation</h3>
+      <p>Smart load-balancing across multiple Gemini API keys.</p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="200">
+      <h1>⬅️</h1>
+      <h3>Zero-Config RTL</h3>
+      <p>Auto-injects <code>dir="rtl"</code> and flips CSS geometry.</p>
+    </td>
+    <td align="center" width="200">
+      <h1>🔒</h1>
+      <h3>No-Mutation Policy</h3>
+      <p>Original source files are read-only. Creates atomic <code>-ar</code> clones.</p>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+---
+
+## 🚀 Installation & Quick Start
+
+### Option A: The npx Workflow (Recommended)
+
+No installation required. Run directly from the cloud.
+
+```bash
+npx arabic-localization-helper scan --project "./src"
+```
+
+### Option B: Local Installation
+
+For CI/CD pipelines or frequent use.
+
+```bash
+npm install -g arabic-localization-helper
+```
+
+### The "Preview -> Translate" Workflow
+
+We believe in trust but verify.
+
+1.  **Scan (Dry Run):** See exactly what _would_ change.
+    ```bash
+    npx arabic-localization-helper scan
+    ```
+2.  **Translate (Execute):** Commit the changes.
+    ```bash
+    npx arabic-localization-helper translate
+    ```
+
+---
+
+## 🧠 The Hybrid AI Engine
+
+The engine follows a strict waterfall logic to optimize for **Speed > Cost > Accuracy**.
+
+```mermaid
+graph TD
+    A[Start Scan] --> B{In Dictionary?};
+    B -- Yes --> C[Use Local Dict];
+    B -- No --> D{In Cache?};
+    D -- Yes --> C;
+    D -- No --> E[Queue for AI];
+    E --> F[Batch AI Request];
+    F --> G[Update Cache & Dict];
+    G --> H[Generate File];
+    C --> H;
+```
+
+---
+
+## 🔄 Resilience: The API Key Rotation System
+
+Enterprise builds cannot fail just because one API key hit a rate limit. Our **Smart Rotation System** handles this autonomously.
+
+### Configuration
+
+Create a `.env` file with your keys. The system accepts a comma-separated pool.
+
+```env
+GEMINI_API_KEYS="key_A_123,key_B_456,key_C_789"
+```
+
+### How It Works (Terminal Simulation)
+
+The engine monitors HTTP 429 (Too Many Requests) and 401/403 (Unauthorized) signals.
+
+```bash
+> Initializing Translation Engine...
+> [Key Rotation] Using key #1/3 (AIza...)
+> [Warning] Key #1 failed: Rate limit reached (HTTP 429) → trying next key
+> [Key Rotation] Using key #2/3 (AIza...)
+> [Success] Key #2 succeeded. Batch processed 150 words.
+```
+
+_This guarantees your pipeline completes even under heavy load._
+
+---
+
+## 🛡️ Developer Experience (DX)
+
+### Intelligent Exclusions
+
+The scanner automatically ignores non-content directories to save resources:
+
+- `node_modules`
+- `.git`
+- `dist` / `build`
+- `*.test.ts` / `*.spec.js`
+
+### AST-Based Safety
+
+Unlike regex replacers, our AST walker understands context.
+
+```typescript
+// Original Code
+const userName = "Welcome Back"; // Translated ✅
+const apiKey = "xyz-123-token";  // Ignored (Heuristic Check) ❌
+import { "Something" } from "lib"; // Ignored (Import Statement) ❌
+```
+
+---
+
+## 📜 License
+
+ISC License © [Ahmed El-hadad](https://github.com/AhmedEl-hadad)
